@@ -1,8 +1,8 @@
-### Delphi CE (Copilador)
+### Delphi CE (IDE & Compilador)
 * https://www.embarcadero.com/products/delphi/starter/free-download
 ### Boss (Gerenciador de pacotes)
 * https://github.com/HashLoad/boss/releases
-### Horse (WebService)
+### Horse (Middleware WebService Rest)
 * https://github.com/HashLoad/horse
 
 ### Dependencias:

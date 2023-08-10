@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{7C7B119B-AE55-4280-BAB0-D5FDC4EFB70A}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="WsGTin.Aplication.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="WsGTin.Service.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="WsGTin_Aplication">
+        <MSBuild Projects="WsGTin.Aplication.dproj"/>
+    </Target>
+    <Target Name="WsGTin_Aplication:Clean">
+        <MSBuild Projects="WsGTin.Aplication.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WsGTin_Aplication:Make">
+        <MSBuild Projects="WsGTin.Aplication.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WsGTin_Service">
+        <MSBuild Projects="WsGTin.Service.dproj"/>
+    </Target>
+    <Target Name="WsGTin_Service:Clean">
+        <MSBuild Projects="WsGTin.Service.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WsGTin_Service:Make">
+        <MSBuild Projects="WsGTin.Service.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="WsGTin_Aplication;WsGTin_Service"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="WsGTin_Aplication:Clean;WsGTin_Service:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="WsGTin_Aplication:Make;WsGTin_Service:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

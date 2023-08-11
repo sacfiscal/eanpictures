@@ -10,8 +10,6 @@ object BaseDados: TBaseDados
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
-  PixelsPerInch = 96
   TextHeight = 13
   object fdQuery1: TFDQuery
     Connection = FdConnection1

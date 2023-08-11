@@ -1,0 +1,10 @@
+Refatoração EAN Pictures - 1a etapa
+
+- Mudar o tipo de aplicação para console
+- Remoção do Main.View.pas
+- Migrar para a nova versão do Horse
+- Remover acesso de recursos visuais da API
+- Criar uma unit específica para conexão com banco de dados
+- Remover Uses do Zeos na classe de conexão com banco de dados
+- Remover Utilização de variáveis globais
+- No endpoint /api/desc_ini/:id garantir que a variável seja destruída

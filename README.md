@@ -1,3 +1,5 @@
+Grupo whatsapp da comunidade EANPictures: https://chat.whatsapp.com/EdaMjCC8fPK8P61yu6kot3
+
 ### Delphi CE (IDE & Compilador)
 * https://www.embarcadero.com/products/delphi/starter/free-download
 ### Boss (Gerenciador de pacotes)

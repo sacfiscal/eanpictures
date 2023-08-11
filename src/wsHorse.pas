@@ -39,6 +39,15 @@ procedure TWsHorse.AddMethods;
 begin
   with FHorse do
   begin
+
+    Get('/api/version',
+    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+    begin
+      var LVersao := TJsonObject.Create;
+      LVersao.AddPair('horseVersion', FHorse.Version);
+      Res.Send<TJsonObject>(LVersao);
+    end);
+
     Get('/api/gtin/:id',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     var

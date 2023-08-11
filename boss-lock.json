@@ -4,40 +4,40 @@
 	"installedModules": {
 		"github.com/hashload/horse": {
 			"name": "horse",
-			"version": "v2.0.6",
-			"hash": "cca1769dfab681cfd26ae8499f9045e1",
+			"version": "3.1.4",
+			"hash": "713a199453748dff73e141f5110d3d9b",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
 		},
 		"github.com/hashload/jhonson": {
 			"name": "jhonson",
-			"version": "1.0.7",
-			"hash": "e0a2cfad431f565769ebe2815299924b",
+			"version": "1.1.6",
+			"hash": "6408c0964998a945994d4bf29d2c88c5",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
 		},
 		"https://github.com/hashload/handle-exception": {
 			"name": "handle-exception",
-			"version": "0.1.4",
-			"hash": "1152772d75f59dbb562cc7b7711a8ebe",
+			"version": "0.1.8",
+			"hash": "362736186bc6293dd9a716d7f7413455",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
 		},
 		"https://github.com/hashload/horse-octet-stream": {
 			"name": "horse-octet-stream",
-			"version": "1.9.3",
-			"hash": "fcc0cde73c6b14672d22f5f5fb2335e2",
+			"version": "1.9.9",
+			"hash": "c7b52b334f166edea1313c94b2ac170c",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
 		},
 		"https://github.com/hashload/jhonson": {
 			"name": "jhonson",
-			"version": "1.0.7",
-			"hash": "e0a2cfad431f565769ebe2815299924b",
+			"version": "1.1.6",
+			"hash": "6408c0964998a945994d4bf29d2c88c5",
 			"artifacts": {},
 			"failed": false,
 			"changed": true

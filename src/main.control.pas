@@ -15,6 +15,8 @@ type
     procedure LoadConfig;
     function GetConfigParams(Key: String): String;
     property WS: TWsHorse read GetWs;
+
+    class var MainControl: TMainControl;
   public
     constructor Create;
     destructor Destroy;
@@ -22,6 +24,9 @@ type
     procedure SaveConfig(Values: TStrings);
     property Config: TStrings read FConfig;
     function Active: Boolean;
+
+    class function GetInstance: TMainControl;
+    class destructor UnInitialize;
   end;
 
 implementation
@@ -54,6 +59,14 @@ begin
   result := Config.Values[Key];
 end;
 
+class function TMainControl.GetInstance: TMainControl;
+begin
+  if MainControl = nil
+  then MainControl := TMainControl.Create;
+
+  Result := MainControl;
+end;
+
 function TMainControl.GetWs: TWsHorse;
 begin
   if not Assigned(FWS)  then
@@ -77,6 +90,12 @@ procedure TMainControl.SaveConfig(Values: TStrings);
 begin
   Config.Assign(Values);
   Config.SaveToFile( FFileConfig );
+end;
+
+class destructor TMainControl.UnInitialize;
+begin
+  if MainControl <> nil
+  then FreeAndNil(MainControl);
 end;
 
 procedure TMainControl.Power;

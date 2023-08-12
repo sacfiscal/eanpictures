@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Buttons,
-  main.control, Vcl.Grids, Vcl.ValEdit;
+  Vcl.Grids, Vcl.ValEdit;
 
 type
   TMainView = class(TForm)
@@ -28,7 +28,6 @@ type
     procedure MemoHistoricoChange(Sender: TObject);
   private
     { Private declarations }
-    Control: TMainControl;
     procedure LoadConfigFile;
     procedure SaveConfigFile;
   public
@@ -43,11 +42,13 @@ var
 
 implementation
 
+uses
+  main.control;
+
 {$R *.dfm}
 
 procedure TMainView.FormCreate(Sender: TObject);
 begin
-  Control := TMainControl.Create;
   LoadConfigFile;
 end;
 
@@ -58,9 +59,9 @@ end;
 
 procedure TMainView.btnPowerClick(Sender: TObject);
 begin
-  Control.Config.Assign( ValueListEditor1.Strings );
-  Control.Power;
-  case Control.Active of
+  TMainControl.GetInstance.Config.Assign( ValueListEditor1.Strings );
+  TMainControl.GetInstance.Power;
+  case TMainControl.GetInstance.Active of
     false: btnPower.Caption := 'Start';
     true : btnPower.Caption := 'Stop';
   end;
@@ -68,7 +69,7 @@ end;
 
 procedure TMainView.LoadConfigFile;
 begin
-  ValueListEditor1.Strings.Assign( Control.Config );
+  ValueListEditor1.Strings.Assign( TMainControl.GetInstance.Config );
 end;
 
 procedure TMainView.MemoHistoricoChange(Sender: TObject);
@@ -79,7 +80,7 @@ end;
 
 procedure TMainView.SaveConfigFile;
 begin
-  Control.SaveConfig(ValueListEditor1.Strings);
+  TMainControl.GetInstance.SaveConfig(ValueListEditor1.Strings);
   LoadConfigFile;
 end;
 

@@ -25,6 +25,9 @@ type
     property Config: TStrings read FConfig;
     function Active: Boolean;
 
+    function GetPath: String;
+    function GetPort: Integer;
+
     class function GetInstance: TMainControl;
     class destructor UnInitialize;
   end;
@@ -67,6 +70,16 @@ begin
   Result := MainControl;
 end;
 
+function TMainControl.GetPath: String;
+begin
+  Result := GetConfigParams('Path');
+end;
+
+function TMainControl.GetPort: Integer;
+begin
+  Result := StrToIntDef(GetConfigParams('Port'), 9000);
+end;
+
 function TMainControl.GetWs: TWsHorse;
 begin
   if not Assigned(FWS)  then
@@ -102,8 +115,8 @@ procedure TMainControl.Power;
 begin
   if not Active then
   begin
-    WS.Port( GetConfigParams('Port').ToInteger )
-      .Path( GetConfigParams('Path') )
+    WS.Port( Self.GetPort )
+      .Path( Self.GetPath )
   end;
   WS.Power;
 end;

@@ -42,7 +42,6 @@ begin
   result:=s2;
 end;
 
-
 procedure GetDescricao200Produto(Req: THorseRequest; Res: THorseResponse);
 var wjson: tjsonobject;
 begin
@@ -342,13 +341,68 @@ begin
 end;
 
 procedure GetProdutoFotoExiste(Req: THorseRequest; Res: THorseResponse);
+var
+  LFile: String;
 begin
+  LFile := TMainControl.GetInstance.GetPath + somentenumero(Req.Params.Items['id']) + '.png';
 
+//  if mainview.MemoHistorico.lines.count > 10000 then
+//  mainview.MemoHistorico.lines.clear;
+  if FileExists(LFile) then
+  begin
+    try
+      Res.Send('Sim').Status(200);
+
+//      inc(cont200);
+//      mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Sim');
+    finally
+    end;
+  end
+  else
+  begin
+    Res.Send('Nao').Status(200);
+
+//    inc(cont200);
+//    mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Nao');
+  end;
 end;
 
 procedure GetProdutoFoto(Req: THorseRequest; Res: THorseResponse);
+var
+  LFile: String;
+  wjson: tjsonobject;
 begin
+  LFile := TMainControl.GetInstance.GetPath + somentenumero(Req.Params.Items['id']) + '.png';
 
+
+//  if mainview.MemoHistorico.lines.count > 10000 then
+//  mainview.MemoHistorico.lines.clear;
+
+  wjson:=tjsonobject.Create;
+
+
+  if FileExists(LFile) then
+  begin
+    try
+      wjson.AddPair(tjsonpair.Create('Status','200'));
+      wjson.AddPair(tjsonpair.Create('Status_Desc','Foto encontrada: '+Req.Params.Items['id']));
+      Res.Send<TJSONobject>(wjson).Status(200);;
+//          Res.Send('Sim').Status(200);
+
+//      inc(cont200);
+//      mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Sim');
+    finally
+    end;
+  end
+  else
+  begin
+    wjson.AddPair(tjsonpair.Create('Status','404'));
+    wjson.AddPair(tjsonpair.Create('Status_Desc','Foto nao encontrada: '+Req.Params.Items['id']));
+    Res.Send<TJSONobject>(wjson).Status(200);;
+//        Res.Send('Nao').Status(200);
+//    inc(cont200);
+//    mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Nao');
+  end;
 end;
 
 procedure GetProdutoGTIN(Req: THorseRequest; Res: THorseResponse);

@@ -5,15 +5,23 @@ interface
 uses
   Horse,
   Horse.Exception,
+  Horse.OctetStream,
+
   System.SysUtils,
   System.JSON,
   System.Classes,
-  Database.Factory;
+  System.IOUtils,
+
+  Database.Factory,
+
+  main.control;
 
 procedure Registry;
 //procedure ConfigSwagger;
 
 implementation
+
+var LPath: String = '';
 
 function RemoveAcento(const ptext: string):string;
 type
@@ -21,6 +29,19 @@ type
 begin
   result := string(usaascii20127(ptext));
 end;
+
+function SomenteNumero(snum: string): string;
+var s1, s2: string;
+  i: integer;
+begin
+  s1 := snum;
+  s2 := '';
+  for i := 1 to length(s1) do
+    if s1[i] in ['0' .. '9'] then
+    s2:=s2 + s1[i];
+  result:=s2;
+end;
+
 
 procedure GetDescricao200Produto(Req: THorseRequest; Res: THorseResponse);
 var wjson: tjsonobject;
@@ -320,6 +341,54 @@ begin
   end;
 end;
 
+procedure GetProdutoFotoExiste(Req: THorseRequest; Res: THorseResponse);
+begin
+
+end;
+
+procedure GetProdutoFoto(Req: THorseRequest; Res: THorseResponse);
+begin
+
+end;
+
+procedure GetProdutoGTIN(Req: THorseRequest; Res: THorseResponse);
+var
+  LFile: String;
+  LFileSend: TFileReturn;
+  LStream: TFileStream;
+  LDisposition: String;
+  LPath: String;
+begin
+  LPath := TMainControl.GetInstance.GetPath;
+  LFile := LPath + SomenteNumero(Req.Params.Items['id']) + '.png';
+
+//      if fileexists(lfile) = false then baixacosmos(somentenumero(Req.Params.Items['id']));
+
+//  if mainview.MemoHistorico.lines.count > 10000 then
+//  mainview.MemoHistorico.lines.clear;
+
+  if FileExists(LFile) then
+  begin
+    try
+      LStream   := TFileStream.Create(LFile, fmOpenRead);
+      LFileSend := TFileReturn.Create( TPath.GetFileName(LFile), LStream, False);
+      Res.Send<TFileReturn>(LFileSend).Status(200);
+
+//      inc(cont200);
+//      mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue arquivo: '+lfile);
+    finally
+    end;
+  end
+  else
+  begin
+    //quando pede foto eu nao envio json no retorno para evitar erro na conversao do lado do cliente
+//    inc(cont404);
+//
+//    mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Arquivo nao encontrado: '+lfile);
+    Res.Send('').Status(404);
+  end;
+end;
+
 procedure Registry;
 begin
   THorse
@@ -327,6 +396,8 @@ begin
     .Get('/api/desc200/:id', GetDescricao200Produto)
     .Get('/api/desc/:id', GetProduto)
     .Get('/api/desc_ini/:id', GetProdutoINI)
+    .Get('/api/fotoexiste/:id', GetProdutoFotoExiste)
+    .Get('/api/gtin/:id', GetProdutoGTIN)
   ;
 end;
 

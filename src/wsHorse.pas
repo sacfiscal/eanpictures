@@ -69,42 +69,6 @@ begin
       Res.Send<TJsonObject>(LVersao);
     end);
 
-    Get('/api/gtin/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var
-      LFile: String;
-      LFileSend: TFileReturn;
-      LStream: TFileStream;
-      LDisposition: String;
-    begin
-      LFile := FPath + somentenumero(Req.Params.Items['id']) + '.png';
-
-//      if fileexists(lfile) = false then baixacosmos(somentenumero(Req.Params.Items['id']));
-
-      if mainview.MemoHistorico.lines.count > 10000 then
-      mainview.MemoHistorico.lines.clear;
-      if FileExists(LFile) then
-      begin
-        try
-          LStream   := TFileStream.Create(LFile, fmOpenRead);
-          LFileSend := TFileReturn.Create( TPath.GetFileName(LFile), LStream, False);
-          Res.Send<TFileReturn>(LFileSend).Status(200);
-          inc(cont200);
-
-          mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue arquivo: '+lfile);
-        finally
-        end;
-      end
-      else
-      begin
-        //quando pede foto eu nao envio json no retorno para evitar erro na conversao do lado do cliente
-        inc(cont404);
-
-        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Arquivo nao encontrado: '+lfile);
-        Res.Send('').Status(404);
-      end;
-    end);
-
     Get('/api/fotoexiste/:id',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     var

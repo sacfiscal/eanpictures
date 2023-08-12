@@ -14,7 +14,6 @@ type
 
   TWsHorse = class
   private
-    FHorse: THorse;
     FPath: String;
 
     FDBParams: TConnectionDefParams;
@@ -51,38 +50,32 @@ uses
 
 function TWsHorse.Active: Boolean;
 begin
- Result := FHorse.IsRunning;
+  Result := THorse.IsRunning;
 end;
 
 procedure TWsHorse.AddMethods;
 begin
   Ean.Controllers.Registry.DoRegistry;
 
-  with FHorse do
-  begin
-
-    Get('/api/version',
+  THorse
+    .Get('/api/version',
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     begin
       var LVersao := TJsonObject.Create;
-      LVersao.AddPair('horseVersion', FHorse.Version);
+      LVersao.AddPair('horseVersion', THorse.Version);
       Res.Send<TJsonObject>(LVersao);
     end);
-
-  end;
 end;
 
 constructor TWsHorse.Create;
 begin
   LoadDatabaseConfig;
 
-  FHorse := THorse.Create;
-  with FHorse do
-  begin
-    Use(Jhonson);
-    Use(OctetStream);
-    Use(HandleException);
-  end;
+  THorse
+    .Use(Jhonson)
+    .Use(OctetStream)
+    .Use(HandleException);
+
   AddMethods;
 end;
 
@@ -117,7 +110,7 @@ end;
 function TWsHorse.Port(Value: Integer): TWsHorse;
 begin
   Result := Self;
-  FHorse.Port := Value;
+  THorse.Port := Value;
 end;
 
 function TWsHorse.Path(Value: String): TWsHorse;
@@ -128,17 +121,16 @@ end;
 
 procedure TWsHorse.Power;
 begin
-  if FHorse.IsRunning
-  then FHorse.StopListen
-  else FHorse.Listen;
+  if THorse.IsRunning
+  then THorse.StopListen
+  else THorse.Listen;
 end;
-
 
 function twshorse.removeacento(const ptext: string):string;
 type
   usaascii20127 = type ansistring(20127);
 begin
-    result:=string(usaascii20127(ptext));
+  result:=string(usaascii20127(ptext));
 end;
 
 function twshorse.somentenumero(snum: string): string;

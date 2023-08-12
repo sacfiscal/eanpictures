@@ -3,14 +3,27 @@ unit wsHorse;
 interface
 
 uses Horse, Horse.Jhonson, Horse.OctetStream, Horse.HandleException,
-  System.SysUtils, System.Net.HttpClientComponent, System.Net.HttpClient;
+  System.SysUtils, System.Net.HttpClientComponent, System.Net.HttpClient,
+
+  Database.Tipos;
 
 type
+  TConnectionDefDriverParams = Database.Tipos.TConnectionDefDriverParams;
+  TConnectionDefParams = Database.Tipos.TConnectionDefParams;
+  TConnectionDefPoolParams = Database.Tipos.TConnectionDefPoolParams;
+
   TWsHorse = class
   private
     FHorse: THorse;
     FPath: String;
+
+    FDBParams: TConnectionDefParams;
+    FDBDriverParams: TConnectionDefDriverParams;
+    FDBPoolParams: TConnectionDefPoolParams;
+
     procedure AddMethods;
+
+    procedure LoadDatabaseConfig;
   public
     constructor Create;
     function Port(Value: Integer): TWsHorse;
@@ -26,7 +39,13 @@ type
 implementation
 
 uses
-  System.Classes, System.IOUtils, main.view, main.basedados, system.JSON;
+  System.Classes,
+  System.IOUtils,
+  main.view,
+  //main.basedados,
+  system.JSON,
+
+  Database.Factory;
 
 { TWsHorse }
 
@@ -157,37 +176,34 @@ begin
     begin
       if Req.Params.Items['id'] <> '' then
       begin
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        with BaseDados.fdquery1 do
+        var ds:= TDatabaseFactory.New.SQL
+          .SQL('select nome, ncm, cest_codigo, embalagem, quantidade_embalagem, marca, categoria from cad_produtos where ean = :ean')
+          .ParamList
+            .AddString('ean', Req.Params.Items['id'])
+            .&End
+          .Open;
+
+        if ds.IsEmpty = false then
         begin
-          close;
-          sql.Clear;
-//          sql.Add('select nome, ncm, cest_codigo, embalagem, quantidade_embalagem, marca, categoria, tributacao from cad_produtos where ean = :ean');
-          sql.Add('select nome, ncm, cest_codigo, embalagem, quantidade_embalagem, marca, categoria from cad_produtos where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            Res.Send(fieldbyname('nome').asstring).Status(200);
-            inc(cont200);
-            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
+          Res.Send(ds.FieldByName('nome').asstring).Status(200);
+          inc(cont200);
+          mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao: '+
+            Req.Params.Items['id']+ '|' +ds.FieldByName('nome').AsString);
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
+            Res.Send<TJSONobject>(wjson).Status(404);;
+            inc(cont404);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+
+              timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -216,34 +232,32 @@ begin
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
+        var ds := TDatabaseFactory.New.SQL
+          .SQL('select nome from unidade_medida where id = :id')
+          .ParamList
+            .AddString('id', Req.Params.Items['id'])
+            .&End
+          .Open;
 
-        with BaseDados.fdquery1 do
+        if not ds.IsEmpty then
         begin
-          close;
-          sql.Clear;
-          sql.Add('select nome from unidade_medida where id = :id');
-          parambyname('id').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            Res.Send(fieldbyname('nome').asstring).Status(200);
-            inc(cont200);
-            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
+          Res.Send(ds.FieldByName('nome').asstring).Status(200);
+          inc(cont200);
+          mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
+            timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +
+            ds.FieldByName('nome').asstring);
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
+            Res.Send<TJSONobject>(wjson).Status(404);;
 
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-            finally
-            end;
+            inc(cont404);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -274,44 +288,41 @@ begin
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
+        var ds := TDatabaseFactory.New.SQL
+          .SQL('select id, nome from unidade_medida where id = :id')
+          .ParamList
+            .AddString('id', Req.Params.Items['id'])
+            .&End
+          .Open();
 
-        with BaseDados.fdquery1 do
+        if not ds.IsEmpty then
         begin
-          close;
-          sql.Clear;
-          sql.Add('select id, nome from unidade_medida where id = :id');
-          parambyname('id').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('id',removeacento(fieldbyname('id').asstring)));
-              wjson.AddPair(tjsonpair.Create('nome',removeacento(fieldbyname('nome').asstring)));
-              Res.Send<TJSONobject>(wjson).Status(200);;
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','200'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
+            wjson.AddPair(tjsonpair.Create('id',removeacento(ds.FieldByName('id').AsString)));
+            wjson.AddPair(tjsonpair.Create('nome',removeacento(ds.FieldByName('nome').AsString)));
+            Res.Send<TJSONobject>(wjson).Status(200);;
 
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
+            inc(cont200);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+
+              Req.Params.Items['id']+ '|' +ds.fieldbyname('nome').asstring);
 
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
+          finally
+          end;
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
+            Res.Send<TJSONobject>(wjson).Status(404);;
 
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-            finally
-            end;
+            inc(cont404);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -342,61 +353,58 @@ begin
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-        with BaseDados.fdquery1 do
+        var LSql := #13#10
+        + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
+        + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
+        + 'FROM base_produtos.cad_produtos cp '
+        + 'where ean = :ean '
+        ;
+
+        var ds := TDatabaseFactory.New.SQL
+          .SQL(Lsql)
+          .ParamList
+            .AddString('ean', Req.Params.Items['id'])
+            .&End
+          .Open();
+
+        if not ds.IsEmpty then
         begin
-          close;
-          sql.Clear;
-//          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, base_produtos.cad_produtos.peso,');
-          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, ');
-          sql.Add('base_produtos.cad_produtos.ncm, base_produtos.cad_produtos.cest_codigo, base_produtos.cad_produtos.embalagem, base_produtos.cad_produtos.quantidade_embalagem,');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria, base_produtos.cad_produtos.tributacao');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria');
-          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria');
-          sql.Add(' FROM base_produtos.cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','200'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
+            wjson.AddPair(tjsonpair.Create('Nome',removeacento(ds.FieldByName('nome').asstring)));
+            wjson.AddPair(tjsonpair.Create('Ncm',removeacento(ds.FieldByName('ncm').asstring)));
+            wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(ds.FieldByName('cest_codigo').asstring)));
+            wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(ds.FieldByName('embalagem').asstring)));
+            wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(ds.FieldByName('quantidade_embalagem').asstring)));
+            wjson.AddPair(tjsonpair.Create('Marca',removeacento(ds.FieldByName('marca').asstring)));
+            wjson.AddPair(tjsonpair.Create('Categoria',removeacento(ds.FieldByName('categoria').asstring)));
+//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(ds.FieldByName('peso').asstring)));
+            wjson.AddPair(tjsonpair.Create('Peso',''));
+//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(ds.FieldByName('id_categoria').asstring)));
+            wjson.AddPair(tjsonpair.Create('id_categoria',''));
+//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(ds.FieldByName('tributacao').asstring)));
+            wjson.AddPair(tjsonpair.Create('tributacao',''));
+            Res.Send<TJSONobject>(wjson).Status(200);;
 
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('Nome',removeacento(fieldbyname('nome').asstring)));
-              wjson.AddPair(tjsonpair.Create('Ncm',removeacento(fieldbyname('ncm').asstring)));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(fieldbyname('cest_codigo').asstring)));
-              wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(fieldbyname('embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(fieldbyname('quantidade_embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('Marca',removeacento(fieldbyname('marca').asstring)));
-              wjson.AddPair(tjsonpair.Create('Categoria',removeacento(fieldbyname('categoria').asstring)));
-//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(fieldbyname('peso').asstring)));
-              wjson.AddPair(tjsonpair.Create('Peso',''));
-//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(fieldbyname('id_categoria').asstring)));
-              wjson.AddPair(tjsonpair.Create('id_categoria',''));
-//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(fieldbyname('tributacao').asstring)));
-              wjson.AddPair(tjsonpair.Create('tributacao',''));
-              Res.Send<TJSONobject>(wjson).Status(200);;
+            inc(cont200);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
+              timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +ds.FieldByName('nome').asstring);
+          finally
+          end;
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
+            Res.Send<TJSONobject>(wjson).Status(404);;
 
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
+            inc(cont404);
+            mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -414,6 +422,7 @@ begin
         end;
       end;
     end);
+
     //************
 
     Get('/api/desc200/:id',
@@ -425,71 +434,68 @@ begin
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-        with BaseDados.fdquery1 do
+        var LSql := #13#10
+        + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
+        + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
+        + 'FROM base_produtos.cad_produtos cp '
+        + 'where ean = :ean '
+        ;
+
+        var ds := TDatabaseFactory.New.SQL
+          .SQL(Lsql)
+          .ParamList
+            .AddString('ean', Req.Params.Items['id'])
+            .&End
+          .Open();
+
+        if not ds.IsEmpty then
         begin
-          close;
-          sql.Clear;
-          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, ');
-//          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, base_produtos.cad_produtos.peso,');
-          sql.Add('base_produtos.cad_produtos.ncm, base_produtos.cad_produtos.cest_codigo, base_produtos.cad_produtos.embalagem, base_produtos.cad_produtos.quantidade_embalagem,');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria, base_produtos.cad_produtos.tributacao');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria');
-          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria');
-          sql.Add(' FROM base_produtos.cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','200'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
+            wjson.AddPair(tjsonpair.Create('Nome',removeacento(ds.FieldByName('nome').asstring)));
+            wjson.AddPair(tjsonpair.Create('Ncm',removeacento(ds.FieldByName('ncm').asstring)));
+            wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(ds.FieldByName('cest_codigo').asstring)));
+            wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(ds.FieldByName('embalagem').asstring)));
+            wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(ds.FieldByName('quantidade_embalagem').asstring)));
+            wjson.AddPair(tjsonpair.Create('Marca',removeacento(ds.FieldByName('marca').asstring)));
+            wjson.AddPair(tjsonpair.Create('Categoria',removeacento(ds.FieldByName('categoria').asstring)));
+//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(ds.FieldByName('peso').asstring)));
+            wjson.AddPair(tjsonpair.Create('Peso',''));
+//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(ds.FieldByName('id_categoria').asstring)));
+            wjson.AddPair(tjsonpair.Create('id_categoria',''));
+//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(ds.FieldByName('tributacao').asstring)));
+            wjson.AddPair(tjsonpair.Create('tributacao',''));
+            Res.Send<TJSONobject>(wjson).Status(200);;
 
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('Nome',removeacento(fieldbyname('nome').asstring)));
-              wjson.AddPair(tjsonpair.Create('Ncm',removeacento(fieldbyname('ncm').asstring)));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(fieldbyname('cest_codigo').asstring)));
-              wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(fieldbyname('embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(fieldbyname('quantidade_embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('Marca',removeacento(fieldbyname('marca').asstring)));
-              wjson.AddPair(tjsonpair.Create('Categoria',removeacento(fieldbyname('categoria').asstring)));
-//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(fieldbyname('peso').asstring)));
-              wjson.AddPair(tjsonpair.Create('Peso',''));
-//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(fieldbyname('id_categoria').asstring)));
-              wjson.AddPair(tjsonpair.Create('id_categoria',''));
-//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(fieldbyname('tributacao').asstring)));
-              wjson.AddPair(tjsonpair.Create('tributacao',''));
-              Res.Send<TJSONobject>(wjson).Status(200);;
+            inc(cont200);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
+              timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +ds.FieldByName('nome').asstring);
+          finally
+          end;
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','404'));
+            wjson.AddPair(tjsonpair.Create('Nome','404'));
+            wjson.AddPair(tjsonpair.Create('Ncm','404'));
+            wjson.AddPair(tjsonpair.Create('Cest_Codigo','404'));
+            wjson.AddPair(tjsonpair.Create('Embalagem','404'));
+            wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem','0'));
+            wjson.AddPair(tjsonpair.Create('Marca','404'));
+            wjson.AddPair(tjsonpair.Create('Categoria','404'));
+            wjson.AddPair(tjsonpair.Create('Peso','0'));
+            wjson.AddPair(tjsonpair.Create('id_categoria','0'));
+            wjson.AddPair(tjsonpair.Create('tributacao','404'));
+            Res.Send<TJSONobject>(wjson).Status(200);;
 
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','404'));
-              wjson.AddPair(tjsonpair.Create('Nome','404'));
-              wjson.AddPair(tjsonpair.Create('Ncm','404'));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo','404'));
-              wjson.AddPair(tjsonpair.Create('Embalagem','404'));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem','0'));
-              wjson.AddPair(tjsonpair.Create('Marca','404'));
-              wjson.AddPair(tjsonpair.Create('Categoria','404'));
-              wjson.AddPair(tjsonpair.Create('Peso','0'));
-              wjson.AddPair(tjsonpair.Create('id_categoria','0'));
-              wjson.AddPair(tjsonpair.Create('tributacao','404'));
-              Res.Send<TJSONobject>(wjson).Status(200);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
+            inc(cont404);
+            mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -521,63 +527,58 @@ begin
         if mainview.MemoHistorico.lines.count > 10000 then
         mainview.MemoHistorico.lines.clear;
 
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
+        var LSql := #13#10
+        + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
+        + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
+        + 'FROM base_produtos.cad_produtos cp '
+        + 'where ean = :ean '
+        ;
 
+        var ds := TDatabaseFactory.New.SQL
+          .SQL(Lsql)
+          .ParamList
+            .AddString('ean', Req.Params.Items['id'])
+            .&End
+          .Open();
 
-        with BaseDados.fdquery1 do
+        if not ds.IsEmpty then
         begin
-          close;
-          sql.Clear;
-//          sql.Add('SELECT cad_produtos.ean, cad_produtos.nome, cad_produtos.peso,');
-          sql.Add('SELECT cad_produtos.ean, cad_produtos.nome, ');
-          sql.Add('cad_produtos.ncm, cad_produtos.cest_codigo, cad_produtos.embalagem, cad_produtos.quantidade_embalagem,');
-//          sql.Add('cad_produtos.marca, cad_produtos.categoria, cad_produtos.id_categoria, cad_produtos.tributacao');
-//          sql.Add('cad_produtos.marca, cad_produtos.categoria, cad_produtos.id_categoria');
-          sql.Add('cad_produtos.marca, cad_produtos.categoria');
-          sql.Add(' FROM cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
+          try
+            oini:=TStringList.Create;
+            oini.Add('[GENERAL]');
+            oini.Add('Nome='+removeacento(ds.FieldByName('nome').asstring));
+            oini.Add('Ncm='+removeacento(ds.FieldByName('ncm').asstring));
+            oini.Add('Cest_Codigo='+removeacento(ds.FieldByName('cest_codigo').asstring));
+            oini.Add('Embalagem='+removeacento(ds.FieldByName('embalagem').asstring));
+            oini.Add('QuantidadeEmbalagem='+removeacento(ds.FieldByName('quantidade_embalagem').asstring));
+            oini.Add('Marca='+removeacento(ds.FieldByName('marca').asstring));
+            oini.Add('Categoria='+removeacento(ds.FieldByName('categoria').asstring));
+            oini.Add('Peso='+'');
+//              oini.Add('id_categoria='+removeacento(ds.FieldByName('id_categoria').asstring));
+            oini.Add('id_categoria='+'');
+//              oini.Add('tributacao'+removeacento(ds.FieldByName('tributacao').asstring));
+            oini.Add('tributacao='+'');
+            Res.Send(oini.TEXT).Status(200);
 
-          if isempty = false then
-          begin
-            try
-              oini:=TStringList.Create;
-              oini.Add('[GENERAL]');
-              oini.Add('Nome='+removeacento(fieldbyname('nome').asstring));
-              oini.Add('Ncm='+removeacento(fieldbyname('ncm').asstring));
-              oini.Add('Cest_Codigo='+removeacento(fieldbyname('cest_codigo').asstring));
-              oini.Add('Embalagem='+removeacento(fieldbyname('embalagem').asstring));
-              oini.Add('QuantidadeEmbalagem='+removeacento(fieldbyname('quantidade_embalagem').asstring));
-              oini.Add('Marca='+removeacento(fieldbyname('marca').asstring));
-              oini.Add('Categoria='+removeacento(fieldbyname('categoria').asstring));
-              oini.Add('Peso='+'');
-//              oini.Add('id_categoria='+removeacento(fieldbyname('id_categoria').asstring));
-              oini.Add('id_categoria='+'');
-//              oini.Add('tributacao'+removeacento(fieldbyname('tributacao').asstring));
-              oini.Add('tributacao='+'');
-              Res.Send(oini.TEXT).Status(200);
+            freeandnil(oini);
 
-              freeandnil(oini);
+            inc(cont200);
+            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
+              timetostr(now)+'| Entregue INI: '+Req.Params.Items['id']+ '|' +ds.FieldByName('nome').asstring);
+          finally
+          end;
+        end
+        else
+        begin
+          try
+            wjson:=tjsonobject.Create;
+            wjson.AddPair(tjsonpair.Create('Status','404'));
+            wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
+            Res.Send<TJSONobject>(wjson).Status(404);;
 
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue INI: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
+            inc(cont404);
+            mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
+          finally
           end;
         end;
       end
@@ -596,16 +597,15 @@ begin
         end;
       end;
     end);
+
     //************
-
-
-
-
   end;
 end;
 
 constructor TWsHorse.Create;
 begin
+  LoadDatabaseConfig;
+
   FHorse := THorse.Create;
   with FHorse do
   begin
@@ -614,6 +614,34 @@ begin
     Use(HandleException);
   end;
   AddMethods;
+end;
+
+procedure TWsHorse.LoadDatabaseConfig;
+begin
+  FDBParams.ConnectionDefName := 'bd_teste';
+  FDBParams.Database := 'base_produtos';
+  FDBParams.UserName := 'sacfiscal';
+  FDBParams.Password := 'Abc123abcc#';
+  FDBParams.Server := '127.0.0.1';
+  FDBParams.Port := 3306;
+
+  FDBDriverParams.DriverID := 'MySQL';
+  FDBDriverParams.DriverDefName := 'MYSQL_DRIVER';
+  FDBDriverParams.VendorLib := 'C:\#DEV\#Projetos\eanpictures4D\Win32\Debug\libmysql.dll';
+
+  FDBParams.LocalConnection := False;
+  FDBPoolParams.Pooled := True;
+
+  FDBPoolParams.PoolMaximumItems := 50;
+  FDBPoolParams.PoolCleanupTimeout := 30000;
+  FDBPoolParams.PoolExpireTimeout := 60000;
+
+  TDatabaseFactory.New
+    .Conexao
+      .SetConnectionDefDriverParams(FDBDriverParams)
+      .SetConnectionDefParams(FDBParams)
+      .SetConnectionDefPoolParams(FDBPoolParams)
+    .IniciaPoolConexoes;
 end;
 
 function TWsHorse.Port(Value: Integer): TWsHorse;

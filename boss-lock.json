@@ -40,7 +40,15 @@
 			"hash": "6408c0964998a945994d4bf29d2c88c5",
 			"artifacts": {},
 			"failed": false,
-			"changed": true
+			"changed": false
+		},
+		"https://github.com/iagoocesaar/pascal-database-engine": {
+			"name": "pascal-database-engine",
+			"version": "0.0.4",
+			"hash": "15ca79fdcab92295975b461669913bff",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
 		}
 	}
 }

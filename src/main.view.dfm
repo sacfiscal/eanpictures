@@ -2,39 +2,40 @@ object MainView: TMainView
   Left = 0
   Top = 0
   Caption = 'Servidor EanPictures 2.9 - Sac Fiscal | Firedac'
-  ClientHeight = 571
-  ClientWidth = 1008
+  ClientHeight = 570
+  ClientWidth = 1004
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 1008
+    Width = 1004
     Height = 41
     Align = alTop
     Caption = 'Server'
     TabOrder = 0
+    ExplicitWidth = 1012
   end
   object Panel3: TPanel
     Left = 0
-    Top = 530
-    Width = 1008
+    Top = 529
+    Width = 1004
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 531
+    ExplicitWidth = 1012
     DesignSize = (
-      1008
+      1004
       41)
     object btnPower: TBitBtn
-      Left = 862
+      Left = 858
       Top = 5
       Width = 142
       Height = 30
@@ -42,9 +43,10 @@ object MainView: TMainView
       Caption = 'Start'
       TabOrder = 0
       OnClick = btnPowerClick
+      ExplicitLeft = 866
     end
     object btnSaveConfig: TBitBtn
-      Left = 661
+      Left = 658
       Top = 5
       Width = 75
       Height = 30
@@ -52,6 +54,7 @@ object MainView: TMainView
       Caption = 'Save Config'
       TabOrder = 1
       OnClick = btnSaveConfigClick
+      ExplicitLeft = 664
     end
   end
   object Panel2: TPanel

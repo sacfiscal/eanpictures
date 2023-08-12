@@ -2,8 +2,8 @@ object BaseDados: TBaseDados
   Left = 0
   Top = 0
   Caption = 'BaseDados'
-  ClientHeight = 231
-  ClientWidth = 375
+  ClientHeight = 230
+  ClientWidth = 371
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

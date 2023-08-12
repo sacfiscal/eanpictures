@@ -42,7 +42,6 @@ uses
   System.Classes,
   System.IOUtils,
   main.view,
-  //main.basedados,
   system.JSON,
 
   Database.Factory;

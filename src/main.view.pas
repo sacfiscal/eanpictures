@@ -42,7 +42,7 @@ var
 //  umerro, umok: integer;
 
 implementation
-uses main.basedados;
+
 {$R *.dfm}
 
 procedure TMainView.FormCreate(Sender: TObject);

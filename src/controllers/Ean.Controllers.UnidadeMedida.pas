@@ -24,52 +24,39 @@ end;
 procedure GetDescricaoUnidadeMedida(Req: THorseRequest; Res: THorseResponse);
 var wjson: tjsonobject;
 begin
-  if Req.Params.Items['id'] <> '' then
+ var LId := Req.Params.Field('id')
+    .Required
+    .RequiredMessage('Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3')
+    .AsString;
+
+  {if mainview.MemoHistorico.lines.count > 10000 then
+      mainview.MemoHistorico.lines.clear;} // Alterar para estratégia de Log no Console
+
+  var ds := TDatabaseFactory.New.SQL
+    .SQL('select nome from unidade_medida where id = :id')
+    .ParamList
+      .AddString('id', LId)
+      .&End
+    .Open;
+
+  if not ds.IsEmpty then
   begin
-
-    {if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;} // Alterar para estratégia de Log no Console
-
-    var ds := TDatabaseFactory.New.SQL
-      .SQL('select nome from unidade_medida where id = :id')
-      .ParamList
-        .AddString('id', Req.Params.Items['id'])
-        .&End
-      .Open;
-
-    if not ds.IsEmpty then
-    begin
-      Res.Send(ds.FieldByName('nome').asstring).Status(200);
-//      inc(cont200);
-//      mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
-//        timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +
-//        ds.FieldByName('nome').asstring);
-    end
-    else
-    begin
-      try
-        wjson:=tjsonobject.Create;
-        wjson.AddPair(tjsonpair.Create('Status','404'));
-        wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
-        Res.Send<TJSONobject>(wjson).Status(404);;
-
-//        inc(cont404);
-//        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-      finally
-      end;
-    end;
+    Res.Send(ds.FieldByName('nome').asstring).Status(200);
+//  inc(cont200);
+//  mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
+//  timetostr(now)+'| Entregue descricao unidade medida: '+LId+ '|' +
+//    ds.FieldByName('nome').asstring);
   end
   else
   begin
     try
       wjson:=tjsonobject.Create;
       wjson.AddPair(tjsonpair.Create('Status','404'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3'));
+      wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+LId));
       Res.Send<TJSONobject>(wjson).Status(404);;
 
-//      inc(cont404);
-//      mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-
+//    inc(cont404);
+//    mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+LId);
     finally
     end;
   end;
@@ -86,7 +73,7 @@ begin
   var ds := TDatabaseFactory.New.SQL
     .SQL('select id, nome from unidade_medida where id = :id')
     .ParamList
-      .AddString('id', Req.Params.Items['id'])
+      .AddString('id', LId)
       .&End
     .Open();
 
@@ -102,7 +89,7 @@ begin
 
 //        inc(cont200);
 //        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+
-//          Req.Params.Items['id']+ '|' +ds.fieldbyname('nome').asstring);
+//          LId+ '|' +ds.fieldbyname('nome').asstring);
 
     finally
     end;
@@ -112,33 +99,11 @@ begin
     try
       wjson:=tjsonobject.Create;
       wjson.AddPair(tjsonpair.Create('Status','404'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
+      wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+LId));
       Res.Send<TJSONobject>(wjson).Status(404);;
 
 //        inc(cont404);
-//        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-    finally
-    end;
-  end;
-
-  if Req.Params.Items['id'] <> '' then
-  begin
-//    if mainview.MemoHistorico.lines.count > 10000 then
-//    mainview.MemoHistorico.lines.clear;
-
-
-  end
-  else
-  begin
-    try
-      wjson:=tjsonobject.Create;
-      wjson.AddPair(tjsonpair.Create('Status','404'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3'));
-      Res.Send<TJSONobject>(wjson).Status(404);;
-
-//      inc(cont404);
-//      mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-
+//        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+LId);
     finally
     end;
   end;

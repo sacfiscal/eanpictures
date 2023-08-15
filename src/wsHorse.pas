@@ -158,7 +158,6 @@ begin
   if directoryexists(FPath + 'Cosmos') = false then
   CreateDir(FPath + 'Cosmos');
 
-
   begin
     if EAN.Length > 0 then
       if not FileExists(lfile) then

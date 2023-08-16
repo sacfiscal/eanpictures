@@ -16,7 +16,9 @@ uses
 
   main.control,
 
-  WsGTin.Model.Factory;
+  WsGTin.Model.Factory,
+
+  Horse.JsonInterceptor.Helpers;
 
 procedure Registry;
 //procedure ConfigSwagger;
@@ -170,63 +172,7 @@ begin
     .Produto
     .ObterProdutoPorEan(LId);
 
-  //    if mainview.MemoHistorico.lines.count > 10000 then
-//    mainview.MemoHistorico.lines.clear;
-
-  var LSql := #13#10
-  + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
-  + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
-  + 'FROM base_produtos.cad_produtos cp '
-  + 'where ean = :ean '
-  ;
-
-  var ds := TDatabaseFactory.New.SQL
-    .SQL(Lsql)
-    .ParamList
-      .AddString('ean', LId)
-      .&End
-    .Open();
-
-  if not ds.IsEmpty then
-  begin
-    try
-      wjson:=tjsonobject.Create;
-      wjson.AddPair(tjsonpair.Create('Status','200'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-      wjson.AddPair(tjsonpair.Create('Nome',removeacento(ds.FieldByName('nome').asstring)));
-      wjson.AddPair(tjsonpair.Create('Ncm',removeacento(ds.FieldByName('ncm').asstring)));
-      wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(ds.FieldByName('cest_codigo').asstring)));
-      wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(ds.FieldByName('embalagem').asstring)));
-      wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(ds.FieldByName('quantidade_embalagem').asstring)));
-      wjson.AddPair(tjsonpair.Create('Marca',removeacento(ds.FieldByName('marca').asstring)));
-      wjson.AddPair(tjsonpair.Create('Categoria',removeacento(ds.FieldByName('categoria').asstring)));
-//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(ds.FieldByName('peso').asstring)));
-      wjson.AddPair(tjsonpair.Create('Peso',''));
-//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(ds.FieldByName('id_categoria').asstring)));
-      wjson.AddPair(tjsonpair.Create('id_categoria',''));
-//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(ds.FieldByName('tributacao').asstring)));
-      wjson.AddPair(tjsonpair.Create('tributacao',''));
-      Res.Send<TJSONobject>(wjson).Status(200);;
-
-//        inc(cont200);
-//        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
-//          timetostr(now)+'| Entregue json: '+LId+ '|' +ds.FieldByName('nome').asstring);
-    finally
-    end;
-  end
-  else
-  begin
-    try
-      wjson:=tjsonobject.Create;
-      wjson.AddPair(tjsonpair.Create('Status','404'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+LId));
-      Res.Send<TJSONobject>(wjson).Status(404);;
-
-//        inc(cont404);
-//        mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+LId);
-    finally
-    end;
-  end;
+  Res.Send(TJson.ObjectToJsonObject(LProduto));
 end;
 
 procedure GetProdutoINI(Req: THorseRequest; Res: THorseResponse);

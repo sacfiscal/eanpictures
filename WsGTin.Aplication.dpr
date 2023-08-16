@@ -7,7 +7,8 @@ uses
   main.control in 'src\main.control.pas',
   WsGTin.Controllers.Registry in 'src\controllers\WsGTin.Controllers.Registry.pas',
   WsGTin.Controllers.Produto in 'src\controllers\WsGTin.Controllers.Produto.pas',
-  WsGTin.Controllers.UnidadeMedida in 'src\controllers\WsGTin.Controllers.UnidadeMedida.pas';
+  WsGTin.Controllers.UnidadeMedida in 'src\controllers\WsGTin.Controllers.UnidadeMedida.pas',
+  WsGTin.Model.Interfaces in 'src\model\WsGTin.Model.Interfaces.pas';
 
 {$R *.res}
 

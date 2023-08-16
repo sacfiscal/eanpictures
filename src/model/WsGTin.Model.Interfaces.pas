@@ -14,6 +14,11 @@ type
     function ObterProdutoPorEan(AEanCode: string): TWsGTinModelEntityProduto;
   end;
 
+  IWsGTinModelFactory = interface
+    ['{B60DB98D-433B-4E91-91D2-7C831E599C2B}']
+    function Produto: IWsGTinModelProduto;
+  end;
+
 implementation
 
 end.

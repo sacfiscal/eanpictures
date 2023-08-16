@@ -14,7 +14,9 @@ uses
 
   Database.Factory,
 
-  main.control;
+  main.control,
+
+  WsGTin.Model.Factory;
 
 procedure Registry;
 //procedure ConfigSwagger;

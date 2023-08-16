@@ -120,6 +120,7 @@
         <DCCReference Include="src\model\WsGTin.Model.Interfaces.pas"/>
         <DCCReference Include="src\model\entity\WsGTin.Model.Entity.Produto.pas"/>
         <DCCReference Include="src\model\WsGTin.Model.Produto.pas"/>
+        <DCCReference Include="src\model\WsGTin.Model.Factory.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

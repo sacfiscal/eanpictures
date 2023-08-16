@@ -44,7 +44,7 @@ uses
   system.JSON,
 
   Database.Factory,
-  Ean.Controllers.Registry;
+  WsGTin.Controllers.Registry;
 
 { TWsHorse }
 
@@ -55,7 +55,7 @@ end;
 
 procedure TWsHorse.AddMethods;
 begin
-  Ean.Controllers.Registry.DoRegistry;
+  WsGTin.Controllers.Registry.DoRegistry;
 
   THorse
     .Get('/api/version',

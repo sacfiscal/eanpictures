@@ -114,9 +114,9 @@
         </DCCReference>
         <DCCReference Include="src\wsHorse.pas"/>
         <DCCReference Include="src\main.control.pas"/>
-        <DCCReference Include="src\controllers\Ean.Controllers.Registry.pas"/>
-        <DCCReference Include="src\controllers\Ean.Controllers.Produto.pas"/>
-        <DCCReference Include="src\controllers\Ean.Controllers.UnidadeMedida.pas"/>
+        <DCCReference Include="src\controllers\WsGTin.Controllers.Registry.pas"/>
+        <DCCReference Include="src\controllers\WsGTin.Controllers.Produto.pas"/>
+        <DCCReference Include="src\controllers\WsGTin.Controllers.UnidadeMedida.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

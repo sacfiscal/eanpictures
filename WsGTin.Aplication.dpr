@@ -5,9 +5,9 @@ uses
   main.view in 'src\main.view.pas' {MainView},
   wsHorse in 'src\wsHorse.pas',
   main.control in 'src\main.control.pas',
-  Ean.Controllers.Registry in 'src\controllers\Ean.Controllers.Registry.pas',
-  Ean.Controllers.Produto in 'src\controllers\Ean.Controllers.Produto.pas',
-  Ean.Controllers.UnidadeMedida in 'src\controllers\Ean.Controllers.UnidadeMedida.pas';
+  WsGTin.Controllers.Registry in 'src\controllers\WsGTin.Controllers.Registry.pas',
+  WsGTin.Controllers.Produto in 'src\controllers\WsGTin.Controllers.Produto.pas',
+  WsGTin.Controllers.UnidadeMedida in 'src\controllers\WsGTin.Controllers.UnidadeMedida.pas';
 
 {$R *.res}
 

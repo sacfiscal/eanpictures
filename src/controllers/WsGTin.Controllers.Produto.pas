@@ -1,4 +1,4 @@
-unit Ean.Controllers.Produto;
+unit WsGTin.Controllers.Produto;
 
 interface
 

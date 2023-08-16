@@ -25,7 +25,7 @@ type
     FDhUpdate: TDateTime;
     FErro: Integer;
     FEmbalagem: string;
-    FQuantidadeEmabalagem: string;
+    FQuantidadeEmabalagem: Double;
     FTributacao: string;
     FProdutoAcento: string;
   public
@@ -45,7 +45,7 @@ type
     property DhUpdate: TDateTime read FDhUpdate write FDhUpdate;
     property Erro: Integer read FErro write FErro;
     property Embalagem: string read FEmbalagem write FEmbalagem;
-    property QuantidadeEmabalagem: string read FQuantidadeEmabalagem write FQuantidadeEmabalagem;
+    property QuantidadeEmabalagem: Double read FQuantidadeEmabalagem write FQuantidadeEmabalagem;
     property Tributacao: string read FTributacao write FTributacao;
     property ProdutoAcento: string read FProdutoAcento write FProdutoAcento;
   end;

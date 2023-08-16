@@ -4,7 +4,10 @@ uses
   Vcl.Forms,
   main.view in 'src\main.view.pas' {MainView},
   wsHorse in 'src\wsHorse.pas',
-  main.control in 'src\main.control.pas';
+  main.control in 'src\main.control.pas',
+  WsGTin.Controllers.Registry in 'src\controllers\WsGTin.Controllers.Registry.pas',
+  WsGTin.Controllers.Produto in 'src\controllers\WsGTin.Controllers.Produto.pas',
+  WsGTin.Controllers.UnidadeMedida in 'src\controllers\WsGTin.Controllers.UnidadeMedida.pas';
 
 {$R *.res}
 

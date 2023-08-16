@@ -15,6 +15,8 @@ type
     procedure LoadConfig;
     function GetConfigParams(Key: String): String;
     property WS: TWsHorse read GetWs;
+
+    class var MainControl: TMainControl;
   public
     constructor Create;
     destructor Destroy;
@@ -22,6 +24,12 @@ type
     procedure SaveConfig(Values: TStrings);
     property Config: TStrings read FConfig;
     function Active: Boolean;
+
+    function GetPath: String;
+    function GetPort: Integer;
+
+    class function GetInstance: TMainControl;
+    class destructor UnInitialize;
   end;
 
 implementation
@@ -54,6 +62,24 @@ begin
   result := Config.Values[Key];
 end;
 
+class function TMainControl.GetInstance: TMainControl;
+begin
+  if MainControl = nil
+  then MainControl := TMainControl.Create;
+
+  Result := MainControl;
+end;
+
+function TMainControl.GetPath: String;
+begin
+  Result := GetConfigParams('Path');
+end;
+
+function TMainControl.GetPort: Integer;
+begin
+  Result := StrToIntDef(GetConfigParams('Port'), 9000);
+end;
+
 function TMainControl.GetWs: TWsHorse;
 begin
   if not Assigned(FWS)  then
@@ -79,12 +105,18 @@ begin
   Config.SaveToFile( FFileConfig );
 end;
 
+class destructor TMainControl.UnInitialize;
+begin
+  if MainControl <> nil
+  then FreeAndNil(MainControl);
+end;
+
 procedure TMainControl.Power;
 begin
   if not Active then
   begin
-    WS.Port( GetConfigParams('Port').ToInteger )
-      .Path( GetConfigParams('Path') )
+    WS.Port( Self.GetPort )
+      .Path( Self.GetPath )
   end;
   WS.Power;
 end;

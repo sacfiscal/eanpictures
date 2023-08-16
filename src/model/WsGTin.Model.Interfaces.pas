@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes,
-  System.Generics.Collection,
+  System.Generics.Collections,
 
   WsGTin.Model.Entity.Produto;
 

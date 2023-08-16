@@ -3,7 +3,7 @@ unit WsGTin.Model.Entity.Produto;
 interface
 
 uses
-  System.Classes;
+  System.Classes,
   System.Generics.Collections;
 
 type

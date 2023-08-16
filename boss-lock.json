@@ -42,6 +42,14 @@
 			"failed": false,
 			"changed": false
 		},
+		"https://github.com/iagoocesaar/horse-jsoninterceptor": {
+			"name": "horse-jsoninterceptor",
+			"version": "0.0.7",
+			"hash": "1c6ce2d3a7c72ab965a01fc44b0df78b",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
 		"https://github.com/iagoocesaar/pascal-database-engine": {
 			"name": "pascal-database-engine",
 			"version": "0.0.4",

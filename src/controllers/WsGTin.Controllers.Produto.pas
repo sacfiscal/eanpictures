@@ -166,6 +166,10 @@ begin
     .RequiredMessage('Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789')
     .AsString;
 
+  var LProduto := TWsGTinModelFactory.New
+    .Produto
+    .ObterProdutoPorEan(LId);
+
   //    if mainview.MemoHistorico.lines.count > 10000 then
 //    mainview.MemoHistorico.lines.clear;
 

@@ -8,7 +8,8 @@ uses
   WsGTin.Controllers.Registry in 'src\controllers\WsGTin.Controllers.Registry.pas',
   WsGTin.Controllers.Produto in 'src\controllers\WsGTin.Controllers.Produto.pas',
   WsGTin.Controllers.UnidadeMedida in 'src\controllers\WsGTin.Controllers.UnidadeMedida.pas',
-  WsGTin.Model.Interfaces in 'src\model\WsGTin.Model.Interfaces.pas';
+  WsGTin.Model.Interfaces in 'src\model\WsGTin.Model.Interfaces.pas',
+  WsGTin.Model.Entity.Produto in 'src\model\entity\WsGTin.Model.Entity.Produto.pas';
 
 {$R *.res}
 

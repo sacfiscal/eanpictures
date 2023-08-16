@@ -161,7 +161,6 @@ begin
 end;
 
 procedure GetProduto(Req: THorseRequest; Res: THorseResponse);
-var wjson: tjsonobject;
 begin
   var LId := Req.Params.Field('id')
     .Required

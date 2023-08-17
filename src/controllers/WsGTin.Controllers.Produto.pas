@@ -60,74 +60,6 @@ begin
   Res.Send(TJson.ObjectToJsonObject(LProduto));
 end;
 
-procedure GetProdutoINI(Req: THorseRequest; Res: THorseResponse);
-var oini: tstringlist;
-var wjson: tjsonobject;
-begin
-  var LId := Req.Params.Field('id')
-    .Required
-    .RequiredMessage('Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789')
-    .AsString;
-
-//  if mainview.MemoHistorico.lines.count > 10000 then
-//    mainview.MemoHistorico.lines.clear;
-
-  var LSql := #13#10
-  + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
-  + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
-  + 'FROM base_produtos.cad_produtos cp '
-  + 'where ean = :ean '
-  ;
-
-  var ds := TDatabaseFactory.New.SQL
-    .SQL(Lsql)
-    .ParamList
-      .AddString('ean', LId)
-      .&End
-    .Open();
-
-  if not ds.IsEmpty then
-  begin
-    try
-      oini:=TStringList.Create;
-      oini.Add('[GENERAL]');
-      oini.Add('Nome='+removeacento(ds.FieldByName('nome').asstring));
-      oini.Add('Ncm='+removeacento(ds.FieldByName('ncm').asstring));
-      oini.Add('Cest_Codigo='+removeacento(ds.FieldByName('cest_codigo').asstring));
-      oini.Add('Embalagem='+removeacento(ds.FieldByName('embalagem').asstring));
-      oini.Add('QuantidadeEmbalagem='+removeacento(ds.FieldByName('quantidade_embalagem').asstring));
-      oini.Add('Marca='+removeacento(ds.FieldByName('marca').asstring));
-      oini.Add('Categoria='+removeacento(ds.FieldByName('categoria').asstring));
-      oini.Add('Peso='+'');
-//    oini.Add('id_categoria='+removeacento(ds.FieldByName('id_categoria').asstring));
-      oini.Add('id_categoria='+'');
-//    oini.Add('tributacao'+removeacento(ds.FieldByName('tributacao').asstring));
-      oini.Add('tributacao='+'');
-      Res.Send(oini.TEXT).Status(200);
-
-      freeandnil(oini);
-
-//    inc(cont200);
-//    mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+
-//      timetostr(now)+'| Entregue INI: '+LId+ '|' +ds.FieldByName('nome').asstring);
-    finally
-    end;
-  end
-  else
-  begin
-    try
-      wjson:=tjsonobject.Create;
-      wjson.AddPair(tjsonpair.Create('Status','404'));
-      wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+LId));
-      Res.Send<TJSONobject>(wjson).Status(404);;
-
-//    inc(cont404);
-//    mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+LId);
-    finally
-    end;
-  end;
-end;
-
 procedure GetProdutoFotoExiste(Req: THorseRequest; Res: THorseResponse);
 var
   LFile: String;
@@ -243,7 +175,6 @@ procedure Registry;
 begin
   THorse
     .Get('/api/desc/:ean', GetProduto)
-    .Get('/api/desc_ini/:id', GetProdutoINI)
     .Get('/api/fotoexiste/:id', GetProdutoFotoExiste)
     .Get('/api/gtin/:id', GetProdutoGTIN)
 

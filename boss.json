@@ -6,9 +6,11 @@
 	"mainsrc": "./",
 	"projects": [],
 	"dependencies": {
-		"github.com/hashload/horse": "^v2.0.6",
+		"github.com/hashload/horse": "^3.1.4",
 		"https://github.com/hashload/handle-exception": "^0.1.4",
 		"https://github.com/hashload/horse-octet-stream": "^1.9.2",
-		"https://github.com/hashload/jhonson": "^1.0.7"
+		"https://github.com/hashload/jhonson": "^1.0.7",
+		"https://github.com/iagoocesaar/horse-jsoninterceptor": "^0.0.7",
+		"https://github.com/iagoocesaar/pascal-database-engine": "^0.0.4"
 	}
 }

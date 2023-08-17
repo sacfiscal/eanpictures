@@ -11,7 +11,8 @@ uses
   WsGTin.Model.Interfaces in 'src\model\WsGTin.Model.Interfaces.pas',
   WsGTin.Model.Entity.Produto in 'src\model\entity\WsGTin.Model.Entity.Produto.pas',
   WsGTin.Model.Produto in 'src\model\WsGTin.Model.Produto.pas',
-  WsGTin.Model.Factory in 'src\model\WsGTin.Model.Factory.pas';
+  WsGTin.Model.Factory in 'src\model\WsGTin.Model.Factory.pas',
+  WsGTin.Model.Entity.UnidadeMedida in 'src\model\entity\WsGTin.Model.Entity.UnidadeMedida.pas';
 
 {$R *.res}
 

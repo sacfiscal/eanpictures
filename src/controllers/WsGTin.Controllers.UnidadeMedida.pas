@@ -11,14 +11,10 @@ procedure Registry;
 implementation
 
 uses
-  System.JSON,
-  Database.Factory,
-
   WsGtin.Model.Factory,
   Horse.JsonInterceptor.Helpers;
 
 procedure GetUnidadeMedida(Req: THorseRequest; Res: THorseResponse);
-var wjson: tjsonobject;
 begin
   var LId := Req.Params.Field('id')
     .Required

@@ -12,27 +12,18 @@ uses
   System.Classes,
   System.IOUtils,
 
-  Database.Factory,
-
-  main.control,
-
-  WsGTin.Model.Factory,
-
-  Horse.JsonInterceptor.Helpers;
+  main.control;
 
 procedure Registry;
 //procedure ConfigSwagger;
 
 implementation
 
-var LPath: String = '';
+uses
+  WsGTin.Model.Factory,
+  Horse.JsonInterceptor.Helpers;
 
-function RemoveAcento(const ptext: string):string;
-type
-  usaascii20127 = type ansistring(20127);
-begin
-  result := string(usaascii20127(ptext));
-end;
+var LPath: String = '';
 
 function SomenteNumero(snum: string): string;
 var s1, s2: string;

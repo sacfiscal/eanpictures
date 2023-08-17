@@ -40,7 +40,9 @@ implementation
 uses
   System.Classes,
   System.IOUtils,
+  {$IF (not defined(CONSOLE))}
   main.view,
+  {$ENDIF}
   system.JSON,
 
   Database.Factory,
@@ -59,7 +61,7 @@ begin
 
   THorse
     .Get('/api/version',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+    procedure(Req: THorseRequest; Res: THorseResponse)
     begin
       var LVersao := TJsonObject.Create;
       LVersao.AddPair('horseVersion', THorse.Version);
@@ -69,6 +71,11 @@ end;
 
 constructor TWsHorse.Create;
 begin
+  {$IFDEF MSWINDOWS}
+  IsConsole := False;
+  ReportMemoryLeaksOnShutdown := True;
+  {$ENDIF}
+
   LoadDatabaseConfig;
 
   THorse
@@ -123,7 +130,13 @@ procedure TWsHorse.Power;
 begin
   if THorse.IsRunning
   then THorse.StopListen
-  else THorse.Listen;
+  else THorse.Listen(
+    procedure begin
+      {$IF defined(CONSOLE) and (not defined(TEST))}
+      Writeln(Format('Server is runing on %s:%d', [THorse.Host, THorse.Port]));
+      Readln;
+      {$ENDIF}
+    end);
 end;
 
 function twshorse.removeacento(const ptext: string):string;
@@ -172,7 +185,9 @@ begin
         //
         Client_.Free;
 
+        {$IF (not defined(CONSOLE))}
         mainview.MemoHistorico.lines.ADD('******Baixado arquivo direto da cosmos: '+lfile+' | '+'https://cdn-cosmos.bluesoft.com.br/products/' + EAN);
+        {$ENDIF}
 
       end;
 

@@ -16,6 +16,8 @@ type
     property Nome: string read FNome write FNome;
   end;
 
+  TWsGTinModelEntityUnidadeMedidaLista = TObjectList<TWsGTinModelEntityUnidadeMedida>;
+
 implementation
 
 end.

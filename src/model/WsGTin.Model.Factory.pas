@@ -16,12 +16,14 @@ type
 
     { IWsGTinModelProduto }
     function Produto: IWsGTinModelProduto;
+    function UnidadeMedida: IWsGTinModelUnidadeMedida;
   end;
 
 implementation
 
 uses
-  WsGTin.Model.Produto;
+  WsGTin.Model.Produto,
+  WsGTin.Model.UnidadeMedida;
 
 { TWsGTinModelFactory }
 
@@ -44,6 +46,11 @@ end;
 function TWsGTinModelFactory.Produto: IWsGTinModelProduto;
 begin
   Result := TWsGTinModelProduto.New;
+end;
+
+function TWsGTinModelFactory.UnidadeMedida: IWsGTinModelUnidadeMedida;
+begin
+  Result := TWsGTinModelUnidadeMedida.New;
 end;
 
 end.

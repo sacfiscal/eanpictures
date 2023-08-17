@@ -58,6 +58,8 @@ begin
     .ObterProdutoPorEan(LEanCode);
 
   Res.Send(TJson.ObjectToJsonObject(LProduto));
+
+  LProduto.Free;
 end;
 
 procedure GetProdutoFotoExiste(Req: THorseRequest; Res: THorseResponse);

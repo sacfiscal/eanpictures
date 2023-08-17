@@ -50,7 +50,7 @@ function TWsGTinModelProduto.ObterProdutoPorEan(
 begin
   var LSql := #13#10
   + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
-  + '       cp.quantidade_embalagem, cp.marca, cp.categoria '
+  + '       cp.quantidade_embalagem, cp.marca, cp.categoria, cp.link_foto '
   + 'FROM base_produtos.cad_produtos cp '
   + 'where ean = :ean '
   ;
@@ -77,6 +77,7 @@ begin
   Result.QuantidadeEmabalagem := ds.FieldByName('quantidade_embalagem').AsFloat;
   Result.Marca := ds.FieldByName('marca').AsString;
   Result.Categoria := ds.FieldByName('categoria').AsString;
+  Result.Foto := ds.FieldByName('link_foto').AsString;
 
 end;
 

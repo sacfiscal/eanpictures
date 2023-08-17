@@ -174,11 +174,11 @@ end;
 procedure Registry;
 begin
   THorse
-    .Get('/api/desc/:ean', GetProduto)
+    .Get('/api/produto/:ean', GetProduto)
+
+    // TODO: Essas rotas deverão ser removidas e adotar estratégia de static files
     .Get('/api/fotoexiste/:id', GetProdutoFotoExiste)
     .Get('/api/gtin/:id', GetProdutoGTIN)
-
-    .Get('/api/produto/:ean', GetProduto)
   ;
 end;
 

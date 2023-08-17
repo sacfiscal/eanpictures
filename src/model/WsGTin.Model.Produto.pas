@@ -49,8 +49,7 @@ function TWsGTinModelProduto.ObterProdutoPorEan(
   AEanCode: string): TWsGTinModelEntityProduto;
 begin
   var LSql := #13#10
-  + 'SELECT cp.ean, cp.nome, cp.ncm, cp.cest_codigo, cp.embalagem,  '
-  + '       cp.quantidade_embalagem, cp.marca, cp.categoria, cp.link_foto '
+  + 'SELECT * '
   + 'FROM base_produtos.cad_produtos cp '
   + 'where ean = :ean '
   ;
@@ -72,13 +71,23 @@ begin
 
   Result.Ean := ds.FieldByName('ean').AsString;
   Result.Nome := ds.FieldByName('nome').AsString;
+  Result.Ncm := ds.FieldByName('ncm').AsInteger;
+  Result.Valor := ds.FieldByName('valor').AsFloat;
+  Result.Avg := ds.FieldByName('avg').AsFloat;
+  Result.Ex := ds.FieldByName('ex').AsInteger;
+  Result.Marca := ds.FieldByName('marca').AsString;
+  Result.Pais := ds.FieldByName('pais').AsString;
+  Result.Categoria := ds.FieldByName('categoria').AsString;
+  Result.ValorMedio := ds.FieldByName('valor_medio').AsFloat;
+  Result.Atualizado := ds.FieldByName('atualizado').AsInteger;
+  Result.Foto := ds.FieldByName('link_foto').AsString;
   Result.CestCodigo := ds.FieldByName('cest_codigo').AsString;
+  Result.DhUpdate := ds.FieldByName('dh_update').AsDateTime;
+  Result.Erro := ds.FieldByName('erro').AsInteger;
   Result.Embalagem := ds.FieldByName('embalagem').AsString;
   Result.QuantidadeEmabalagem := ds.FieldByName('quantidade_embalagem').AsFloat;
-  Result.Marca := ds.FieldByName('marca').AsString;
-  Result.Categoria := ds.FieldByName('categoria').AsString;
-  Result.Foto := ds.FieldByName('link_foto').AsString;
-
+  Result.Tributacao := ds.FieldByName('tributacao').AsString;
+  Result.ProdutoAcento := ds.FieldByName('produto_acento').AsString;
 end;
 
 end.

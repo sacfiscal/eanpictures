@@ -14,13 +14,13 @@
 - [ ] Organização do projeto em pastas (controllers, providers, services)
 - [X] organização e nomeação dos endpoints
 - [ ] Passagem de filtros
-- [ ] Separar em responsabilidades o conteúdo que está na wsHorse
+- [X] Separar em responsabilidades o conteúdo que está na wsHorse
 - [ ] Padronizar Nome de variáveis e parâmetros de funções
-- [ ] Blocos try-finally sem necessidade
-- [ ] Rever Uso do with
+- [X] Blocos try-finally sem necessidade
+- [X] Rever Uso do with
 - [X] Manter um padrão na resposta dos dados, uma hora retorna JSON, outra um texto
-- [ ] Parâmetro Next não é mais necessário na nova versão do Horse
+- [X] Parâmetro Next não é mais necessário na nova versão do Horse
 - [ ] Não precisa ficar criando TJSONPair para cada pair adicionado
-- [ ] Uso do FreeAndNil sem necessidade no endpoint /api/desc_ini/:id
+- [X] Uso do FreeAndNil sem necessidade no endpoint /api/desc_ini/:id
 - [ ] Identação de código
 - [ ] Excluir Componente para fazer requisição

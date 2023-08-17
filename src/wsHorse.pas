@@ -61,7 +61,7 @@ begin
 
   THorse
     .Get('/api/version',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+    procedure(Req: THorseRequest; Res: THorseResponse)
     begin
       var LVersao := TJsonObject.Create;
       LVersao.AddPair('horseVersion', THorse.Version);

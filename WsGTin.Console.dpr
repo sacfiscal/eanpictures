@@ -25,6 +25,7 @@ begin
   App.Use(HandleException);
 
   controller.Method.Registry(App);
+  Writeln('Console Port : 9000' + App.Listen(9000));
   App.Listen(9000);
 
 end.

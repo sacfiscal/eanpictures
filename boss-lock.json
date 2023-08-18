@@ -4,8 +4,8 @@
 	"installedModules": {
 		"github.com/hashload/horse": {
 			"name": "horse",
-			"version": "3.1.4",
-			"hash": "9bdef5f7fcfe07ea01e0d4572ca2bcde",
+			"version": "3.1.5",
+			"hash": "58ff510ba7e701f5f8029182762f5341",
 			"artifacts": {},
 			"failed": false,
 			"changed": false

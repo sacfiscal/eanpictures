@@ -10,8 +10,10 @@ uses
   Horse,
   Horse.Jhonson,
   Horse.OctetStream,
-  Horse.HandleException;
-
+  Horse.HandleException,
+  controller.Method in 'src\controller\controller.Method.pas',
+  utils.bibliotecas in 'src\utils\utils.bibliotecas.pas',
+  interfaces.bibliotecas in 'src\Interfaces\interfaces.bibliotecas.pas';
 
 var
   App : THorse;
@@ -22,14 +24,7 @@ begin
   App.Use(OctetStream);
   App.Use(HandleException);
 
-  App.Get('/ping',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    begin
-      Res.Send('pong').Status(200);
-    end);
-
-    App.Listen(9000);
-
-
+  controller.Method.Registry(App);
+  App.Listen(9000);
 
 end.

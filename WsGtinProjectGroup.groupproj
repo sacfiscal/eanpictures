@@ -9,7 +9,7 @@
         <Projects Include="WsGtin.Service.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="C:\Users\rbbar\OneDrive\Documentos\Embarcadero\Studio\Projects\WsGTin.Console.dproj">
+        <Projects Include="WsGTin.Console.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -39,13 +39,13 @@
         <MSBuild Projects="WsGtin.Service.dproj" Targets="Make"/>
     </Target>
     <Target Name="WsGTin_Console">
-        <MSBuild Projects="C:\Users\rbbar\OneDrive\Documentos\Embarcadero\Studio\Projects\WsGTin.Console.dproj"/>
+        <MSBuild Projects="WsGTin.Console.dproj"/>
     </Target>
     <Target Name="WsGTin_Console:Clean">
-        <MSBuild Projects="C:\Users\rbbar\OneDrive\Documentos\Embarcadero\Studio\Projects\WsGTin.Console.dproj" Targets="Clean"/>
+        <MSBuild Projects="WsGTin.Console.dproj" Targets="Clean"/>
     </Target>
     <Target Name="WsGTin_Console:Make">
-        <MSBuild Projects="C:\Users\rbbar\OneDrive\Documentos\Embarcadero\Studio\Projects\WsGTin.Console.dproj" Targets="Make"/>
+        <MSBuild Projects="WsGTin.Console.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
         <CallTarget Targets="WsGtin_Aplication;WsGtin_Service;WsGTin_Console"/>

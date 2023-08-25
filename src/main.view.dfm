@@ -10,127 +10,322 @@ object MainView: TMainView
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
+  Position = poDesktopCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
-    Left = 0
-    Top = 0
-    Width = 1008
-    Height = 41
+    AlignWithMargins = True
+    Left = 2
+    Top = 1
+    Width = 1004
+    Height = 110
+    Margins.Left = 2
+    Margins.Top = 1
+    Margins.Right = 2
+    Margins.Bottom = 1
     Align = alTop
-    Caption = 'Server'
+    BevelInner = bvLowered
     TabOrder = 0
+    object pnl200: TPanel
+      AlignWithMargins = True
+      Left = 7
+      Top = 3
+      Width = 200
+      Height = 104
+      Margins.Left = 5
+      Margins.Top = 1
+      Margins.Right = 5
+      Margins.Bottom = 1
+      Align = alLeft
+      BevelKind = bkFlat
+      BevelOuter = bvNone
+      TabOrder = 0
+      object lbl_200: TLabel
+        AlignWithMargins = True
+        Left = 1
+        Top = 1
+        Width = 194
+        Height = 13
+        Margins.Left = 1
+        Margins.Top = 1
+        Margins.Right = 1
+        Margins.Bottom = 1
+        Align = alTop
+        Caption = 'Resquests 200 :'
+        Color = clBtnFace
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clMedGray
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        ExplicitWidth = 78
+      end
+      object lbl200: TLabel
+        AlignWithMargins = True
+        Left = 1
+        Top = 16
+        Width = 194
+        Height = 83
+        Margins.Left = 1
+        Margins.Top = 1
+        Margins.Right = 1
+        Margins.Bottom = 1
+        Align = alClient
+        Caption = '000'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGreen
+        Font.Height = -53
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Layout = tlCenter
+        ExplicitWidth = 102
+        ExplicitHeight = 64
+      end
+    end
+    object pnl404: TPanel
+      AlignWithMargins = True
+      Left = 217
+      Top = 3
+      Width = 200
+      Height = 104
+      Margins.Left = 5
+      Margins.Top = 1
+      Margins.Right = 5
+      Margins.Bottom = 1
+      Align = alLeft
+      BevelKind = bkFlat
+      BevelOuter = bvNone
+      TabOrder = 1
+      object lbl_404: TLabel
+        AlignWithMargins = True
+        Left = 1
+        Top = 1
+        Width = 194
+        Height = 13
+        Margins.Left = 1
+        Margins.Top = 1
+        Margins.Right = 1
+        Margins.Bottom = 1
+        Align = alTop
+        Caption = 'Resquests 404 :'
+        Color = clBtnFace
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clMedGray
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        ExplicitWidth = 78
+      end
+      object lbl404: TLabel
+        AlignWithMargins = True
+        Left = 1
+        Top = 16
+        Width = 194
+        Height = 83
+        Margins.Left = 1
+        Margins.Top = 1
+        Margins.Right = 1
+        Margins.Bottom = 1
+        Align = alClient
+        Caption = '000'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clRed
+        Font.Height = -53
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        Layout = tlCenter
+        ExplicitWidth = 102
+        ExplicitHeight = 64
+      end
+    end
+    object Panel6: TPanel
+      AlignWithMargins = True
+      Left = 424
+      Top = 3
+      Width = 576
+      Height = 104
+      Margins.Left = 2
+      Margins.Top = 1
+      Margins.Right = 2
+      Margins.Bottom = 1
+      Align = alClient
+      BevelKind = bkFlat
+      BevelOuter = bvNone
+      TabOrder = 2
+      Visible = False
+      object lbl_db: TLabel
+        AlignWithMargins = True
+        Left = 1
+        Top = 1
+        Width = 570
+        Height = 13
+        Margins.Left = 1
+        Margins.Top = 1
+        Margins.Right = 1
+        Margins.Bottom = 1
+        Align = alTop
+        Caption = 'Banco de dados :'
+        Color = clBtnFace
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clMedGray
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+        ExplicitWidth = 83
+      end
+      object BitBtn1: TBitBtn
+        AlignWithMargins = True
+        Left = 494
+        Top = 18
+        Width = 75
+        Height = 79
+        Align = alRight
+        Caption = 'Refresh'
+        TabOrder = 0
+      end
+      object StringGrid1: TStringGrid
+        AlignWithMargins = True
+        Left = 3
+        Top = 18
+        Width = 485
+        Height = 79
+        Align = alClient
+        ColCount = 2
+        TabOrder = 1
+      end
+    end
   end
   object Panel3: TPanel
     Left = 0
-    Top = 530
+    Top = 512
     Width = 1008
-    Height = 41
+    Height = 59
     Align = alBottom
     TabOrder = 1
-    DesignSize = (
-      1008
-      41)
     object btnPower: TBitBtn
-      Left = 862
-      Top = 5
-      Width = 142
-      Height = 30
-      Anchors = [akTop, akRight, akBottom]
+      AlignWithMargins = True
+      Left = 854
+      Top = 2
+      Width = 150
+      Height = 51
+      Margins.Left = 10
+      Margins.Top = 1
+      Margins.Bottom = 5
+      Align = alRight
       Caption = 'Start'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -27
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
       TabOrder = 0
       OnClick = btnPowerClick
     end
     object btnSaveConfig: TBitBtn
-      Left = 661
-      Top = 5
-      Width = 75
-      Height = 30
-      Anchors = []
+      AlignWithMargins = True
+      Left = 691
+      Top = 2
+      Width = 150
+      Height = 51
+      Margins.Left = 10
+      Margins.Top = 1
+      Margins.Bottom = 5
+      Align = alRight
       Caption = 'Save Config'
       TabOrder = 1
       OnClick = btnSaveConfigClick
     end
+    object btnTest: TBitBtn
+      AlignWithMargins = True
+      Left = 11
+      Top = 2
+      Width = 38
+      Height = 51
+      Margins.Left = 10
+      Margins.Top = 1
+      Margins.Bottom = 5
+      Align = alLeft
+      Caption = 'Test'
+      TabOrder = 2
+      OnClick = btnTestClick
+    end
+    object btnClear: TBitBtn
+      AlignWithMargins = True
+      Left = 528
+      Top = 2
+      Width = 150
+      Height = 51
+      Margins.Left = 10
+      Margins.Top = 1
+      Margins.Bottom = 5
+      Align = alRight
+      Caption = 'Clear'
+      TabOrder = 3
+      OnClick = btnClearClick
+    end
   end
   object Panel2: TPanel
-    Left = 0
-    Top = 47
-    Width = 1008
-    Height = 482
+    AlignWithMargins = True
+    Left = 3
+    Top = 115
+    Width = 1002
+    Height = 394
+    Align = alClient
     TabOrder = 2
-    object Bevel1: TBevel
-      Left = 1
-      Top = 465
-      Width = 1006
-      Height = 16
-      Align = alBottom
-      ExplicitTop = 337
-    end
-    object Label1: TLabel
-      Left = 4
-      Top = 419
-      Width = 147
-      Height = 13
-      Caption = 'Total de Resquests resolvidos:'
-    end
-    object Label2: TLabel
-      Left = 4
-      Top = 443
-      Width = 117
-      Height = 13
-      Caption = 'Total de Resquests 404:'
-    end
-    object ValueListEditor1: TValueListEditor
-      Left = 1
-      Top = 1
-      Width = 1006
+    object vlEditor: TValueListEditor
+      AlignWithMargins = True
+      Left = 3
+      Top = 2
+      Width = 996
       Height = 80
+      Margins.Left = 2
+      Margins.Top = 1
+      Margins.Right = 2
+      Margins.Bottom = 1
       Align = alTop
       TabOrder = 0
       ColWidths = (
         150
-        850)
+        840)
       RowHeights = (
         18
         18)
     end
-    object GroupBox3: TGroupBox
+    object gbLog: TGroupBox
       Left = 1
-      Top = 81
-      Width = 1006
-      Height = 336
-      Align = alTop
-      Caption = 'Hist'#243'rico'
+      Top = 83
+      Width = 1000
+      Height = 310
+      Margins.Left = 2
+      Margins.Top = 1
+      Margins.Right = 2
+      Margins.Bottom = 1
+      Align = alClient
+      Caption = '| Hist'#243'rico |'
       TabOrder = 1
-      object MemoHistorico: TMemo
-        Left = 2
-        Top = 15
-        Width = 1002
-        Height = 319
+      object mmLog: TMemo
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 990
+        Height = 287
         Align = alClient
-        Lines.Strings = (
-          'MemoOK')
+        ReadOnly = True
+        ScrollBars = ssVertical
         TabOrder = 0
-        OnChange = MemoHistoricoChange
+        OnChange = mmLogChange
       end
-    end
-    object Edit1: TEdit
-      Left = 160
-      Top = 416
-      Width = 121
-      Height = 21
-      TabOrder = 2
-      Text = 'Edit1'
-    end
-    object Edit2: TEdit
-      Left = 160
-      Top = 440
-      Width = 121
-      Height = 21
-      TabOrder = 3
-      Text = 'Edit1'
     end
   end
 end

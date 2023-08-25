@@ -2,684 +2,567 @@ unit wsHorse;
 
 interface
 
-uses Horse, Horse.Jhonson, Horse.OctetStream, Horse.HandleException,
-  System.SysUtils, System.Net.HttpClientComponent, System.Net.HttpClient;
+uses System.Classes, System.SysUtils, System.IOUtils,
+     System.Generics.Collections, System.JSON,
+     Horse, Horse.Jhonson, Horse.OctetStream, Horse.HandleException;
+
+// http://localhost:9000/api/desc/78932609
+// http://localhost:9000/api/desc/7894900011517
+// http://localhost:9000/api/desc_ini/7894900011517
+
+//http://localhost:9000/api/v2/gtin/7894900011517
 
 type
   TWsHorse = class
   private
-    FHorse: THorse;
-    FPath: String;
-    procedure AddMethods;
-  public
-    constructor Create;
-    function Port(Value: Integer): TWsHorse;
-    function Path(Value: String): TWsHorse;
-    function Active: Boolean;
-    procedure Power;
-    function removeacento(const ptext: string):string;
-    function somentenumero(snum: string): string;
-    procedure baixacosmos(const ean: string);
+    FHorse : THorse;
+    FPath  : String;
+    FLog   : TProc<String>;
 
+    procedure DoLog(Value : String);
+    function  DoCount(Value : Boolean) : Integer;
+
+    procedure DoStatus(Req : THorseRequest; Res : THorseResponse; Status : Integer; MensStatus, Mens, MensLog : String);
+
+    procedure Gtin(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+
+    procedure FotoExiste(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure FotoExisteJson(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+
+    procedure Descricao(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure DescricaoJSon(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure DescricaoJSon200(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure DescricaoIni(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+
+    procedure UnidadeMedidaNome(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure UnidadeMedidaJSon(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+
+    procedure V2Gtin(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+    procedure V2UnidadeMedida(Req : THorseRequest; Res : THorseResponse; Next : TProc);
+
+    procedure AddMethods;
+
+  public
+    Constructor Create;
+    Destructor Destroy; Override;
+
+    function Port(Value : Integer) : TWsHorse;
+    function Path(Value : String) : TWsHorse;
+    function Log(Value : TProc<String>) : TWsHorse;
+
+    function Active: Boolean;
+
+    procedure Power;
   end;
 
 implementation
 
-uses
-  System.Classes, System.IOUtils, main.view, main.basedados, system.JSON;
+uses gtin.consts,
+     gtin.utils,
+     gtin.Classes,
+     gtin.dm,
+     main.view;
 
 { TWsHorse }
 
 function TWsHorse.Active: Boolean;
 begin
- Result := FHorse.IsRunning;
+   Result := FHorse.IsRunning;
 end;
 
 procedure TWsHorse.AddMethods;
 begin
-  with FHorse do
-  begin
-    Get('/api/gtin/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var
-      LFile: String;
-      LFileSend: TFileReturn;
-      LStream: TFileStream;
-      LDisposition: String;
-    begin
-      LFile := FPath + somentenumero(Req.Params.Items['id']) + '.png';
+   FHorse.Get('/api/gtin/:id'       , Gtin);
 
-//      if fileexists(lfile) = false then baixacosmos(somentenumero(Req.Params.Items['id']));
+   FHorse.Get('/api/fotoexiste/:id' , FotoExiste);
+   FHorse.Get('/api/fotoexistej/:id', FotoExisteJson);
 
-      if mainview.MemoHistorico.lines.count > 10000 then
-      mainview.MemoHistorico.lines.clear;
-      if FileExists(LFile) then
-      begin
-        try
-          LStream   := TFileStream.Create(LFile, fmOpenRead);
-          LFileSend := TFileReturn.Create( TPath.GetFileName(LFile), LStream, False);
-          Res.Send<TFileReturn>(LFileSend).Status(200);
-          inc(cont200);
+   FHorse.Get('/api/descricao/:id'  , Descricao);
+   FHorse.Get('/api/desc/:id'       , DescricaoJSon);
+   FHorse.Get('/api/desc200/:id'    , DescricaoJSon200);
+   FHorse.Get('/api/desc_ini/:id'   , DescricaoIni);
 
-          mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue arquivo: '+lfile);
-        finally
-        end;
-      end
-      else
-      begin
-        //quando pede foto eu nao envio json no retorno para evitar erro na conversao do lado do cliente
-        inc(cont404);
+   FHorse.Get('/api/um/:id'         , UnidadeMedidaJSon);
+   FHorse.Get('/api/um2/:id'        , UnidadeMedidaNome);
 
-        mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Arquivo nao encontrado: '+lfile);
-        Res.Send('').Status(404);
-      end;
-    end);
-
-    Get('/api/fotoexiste/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var
-      LFile: String;
-    begin
-      LFile := FPath + somentenumero(Req.Params.Items['id']) + '.png';
-
-
-      if mainview.MemoHistorico.lines.count > 10000 then
-      mainview.MemoHistorico.lines.clear;
-      if FileExists(LFile) then
-      begin
-        try
-          Res.Send('Sim').Status(200);
-          inc(cont200);
-
-          mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Sim');
-        finally
-        end;
-      end
-      else
-      begin
-        Res.Send('Nao').Status(200);
-        inc(cont200);
-        mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Nao');
-      end;
-    end);
-
-    Get('/api/fotoexistej/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var
-      LFile: String;
-      wjson: tjsonobject;
-    begin
-      LFile := FPath + somentenumero(Req.Params.Items['id']) + '.png';
-
-
-      if mainview.MemoHistorico.lines.count > 10000 then
-      mainview.MemoHistorico.lines.clear;
-
-      wjson:=tjsonobject.Create;
-
-
-      if FileExists(LFile) then
-      begin
-        try
-          wjson.AddPair(tjsonpair.Create('Status','200'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Foto encontrada: '+Req.Params.Items['id']));
-          Res.Send<TJSONobject>(wjson).Status(200);;
-//          Res.Send('Sim').Status(200);
-          inc(cont200);
-
-          mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Sim');
-        finally
-        end;
-      end
-      else
-      begin
-        wjson.AddPair(tjsonpair.Create('Status','404'));
-        wjson.AddPair(tjsonpair.Create('Status_Desc','Foto nao encontrada: '+Req.Params.Items['id']));
-        Res.Send<TJSONobject>(wjson).Status(200);;
-//        Res.Send('Nao').Status(200);
-        inc(cont200);
-        mainview.MemoHistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Consulta Arquivo : '+lfile+' Nao');
-      end;
-    end);
-
-    Get('/api/descricao/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var wjson: tjsonobject;
-    begin
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-//          sql.Add('select nome, ncm, cest_codigo, embalagem, quantidade_embalagem, marca, categoria, tributacao from cad_produtos where ean = :ean');
-          sql.Add('select nome, ncm, cest_codigo, embalagem, quantidade_embalagem, marca, categoria from cad_produtos where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            Res.Send(fieldbyname('nome').asstring).Status(200);
-            inc(cont200);
-            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-        finally
-        end;
-      end;
-
-    end);
-
-    Get('/api/um2/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var wjson: tjsonobject;
-    begin
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-          sql.Add('select nome from unidade_medida where id = :id');
-          parambyname('id').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            Res.Send(fieldbyname('nome').asstring).Status(200);
-            inc(cont200);
-            mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-
-        finally
-        end;
-      end;
-    end);
-
-//***
-    Get('/api/um/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var wjson: tjsonobject;
-    begin
-
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-          sql.Add('select id, nome from unidade_medida where id = :id');
-          parambyname('id').AsString:=Req.Params.Items['id'];
-          open;
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('id',removeacento(fieldbyname('id').asstring)));
-              wjson.AddPair(tjsonpair.Create('nome',removeacento(fieldbyname('nome').asstring)));
-              Res.Send<TJSONobject>(wjson).Status(200);;
-
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue descricao unidade medida: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para a unidade de medida: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada a unidade de meida: '+Req.Params.Items['id']);
-
-        finally
-        end;
-      end;
-    end);
-
-//****
-
-    Get('/api/desc/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var wjson: tjsonobject;
-    begin
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-//          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, base_produtos.cad_produtos.peso,');
-          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, ');
-          sql.Add('base_produtos.cad_produtos.ncm, base_produtos.cad_produtos.cest_codigo, base_produtos.cad_produtos.embalagem, base_produtos.cad_produtos.quantidade_embalagem,');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria, base_produtos.cad_produtos.tributacao');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria');
-          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria');
-          sql.Add(' FROM base_produtos.cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
-
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('Nome',removeacento(fieldbyname('nome').asstring)));
-              wjson.AddPair(tjsonpair.Create('Ncm',removeacento(fieldbyname('ncm').asstring)));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(fieldbyname('cest_codigo').asstring)));
-              wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(fieldbyname('embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(fieldbyname('quantidade_embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('Marca',removeacento(fieldbyname('marca').asstring)));
-              wjson.AddPair(tjsonpair.Create('Categoria',removeacento(fieldbyname('categoria').asstring)));
-//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(fieldbyname('peso').asstring)));
-              wjson.AddPair(tjsonpair.Create('Peso',''));
-//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(fieldbyname('id_categoria').asstring)));
-              wjson.AddPair(tjsonpair.Create('id_categoria',''));
-//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(fieldbyname('tributacao').asstring)));
-              wjson.AddPair(tjsonpair.Create('tributacao',''));
-              Res.Send<TJSONobject>(wjson).Status(200);;
-
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-        finally
-        end;
-      end;
-    end);
-    //************
-
-    Get('/api/desc200/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var wjson: tjsonobject;
-    begin
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, ');
-//          sql.Add('SELECT base_produtos.cad_produtos.ean, base_produtos.cad_produtos.nome, base_produtos.cad_produtos.peso,');
-          sql.Add('base_produtos.cad_produtos.ncm, base_produtos.cad_produtos.cest_codigo, base_produtos.cad_produtos.embalagem, base_produtos.cad_produtos.quantidade_embalagem,');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria, base_produtos.cad_produtos.tributacao');
-//          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria, base_produtos.cad_produtos.id_categoria');
-          sql.Add('base_produtos.cad_produtos.marca, base_produtos.cad_produtos.categoria');
-          sql.Add(' FROM base_produtos.cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
-
-          if isempty = false then
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','200'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Ok'));
-              wjson.AddPair(tjsonpair.Create('Nome',removeacento(fieldbyname('nome').asstring)));
-              wjson.AddPair(tjsonpair.Create('Ncm',removeacento(fieldbyname('ncm').asstring)));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo',removeacento(fieldbyname('cest_codigo').asstring)));
-              wjson.AddPair(tjsonpair.Create('Embalagem',removeacento(fieldbyname('embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem',removeacento(fieldbyname('quantidade_embalagem').asstring)));
-              wjson.AddPair(tjsonpair.Create('Marca',removeacento(fieldbyname('marca').asstring)));
-              wjson.AddPair(tjsonpair.Create('Categoria',removeacento(fieldbyname('categoria').asstring)));
-//              wjson.AddPair(tjsonpair.Create('Peso',removeacento(fieldbyname('peso').asstring)));
-              wjson.AddPair(tjsonpair.Create('Peso',''));
-//              wjson.AddPair(tjsonpair.Create('id_categoria',removeacento(fieldbyname('id_categoria').asstring)));
-              wjson.AddPair(tjsonpair.Create('id_categoria',''));
-//              wjson.AddPair(tjsonpair.Create('tributacao',removeacento(fieldbyname('tributacao').asstring)));
-              wjson.AddPair(tjsonpair.Create('tributacao',''));
-              Res.Send<TJSONobject>(wjson).Status(200);;
-
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue json: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','404'));
-              wjson.AddPair(tjsonpair.Create('Nome','404'));
-              wjson.AddPair(tjsonpair.Create('Ncm','404'));
-              wjson.AddPair(tjsonpair.Create('Cest_Codigo','404'));
-              wjson.AddPair(tjsonpair.Create('Embalagem','404'));
-              wjson.AddPair(tjsonpair.Create('QuantidadeEmbalagem','0'));
-              wjson.AddPair(tjsonpair.Create('Marca','404'));
-              wjson.AddPair(tjsonpair.Create('Categoria','404'));
-              wjson.AddPair(tjsonpair.Create('Peso','0'));
-              wjson.AddPair(tjsonpair.Create('id_categoria','0'));
-              wjson.AddPair(tjsonpair.Create('tributacao','404'));
-              Res.Send<TJSONobject>(wjson).Status(200);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-
-        finally
-        end;
-      end;
-    end);
-    //************
-
-
-    Get('/api/desc_ini/:id',
-    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
-    var oini: tstringlist;
-    var wjson: tjsonobject;
-    begin
-      if Req.Params.Items['id'] <> '' then
-      begin
-        if mainview.MemoHistorico.lines.count > 10000 then
-        mainview.MemoHistorico.lines.clear;
-
-        if basedados.fdConnection1.Connected= false then
-        basedados.fdConnection1.Connected:=true;
-
-
-        with BaseDados.fdquery1 do
-        begin
-          close;
-          sql.Clear;
-//          sql.Add('SELECT cad_produtos.ean, cad_produtos.nome, cad_produtos.peso,');
-          sql.Add('SELECT cad_produtos.ean, cad_produtos.nome, ');
-          sql.Add('cad_produtos.ncm, cad_produtos.cest_codigo, cad_produtos.embalagem, cad_produtos.quantidade_embalagem,');
-//          sql.Add('cad_produtos.marca, cad_produtos.categoria, cad_produtos.id_categoria, cad_produtos.tributacao');
-//          sql.Add('cad_produtos.marca, cad_produtos.categoria, cad_produtos.id_categoria');
-          sql.Add('cad_produtos.marca, cad_produtos.categoria');
-          sql.Add(' FROM cad_produtos');
-          sql.Add('where ean = :ean');
-          parambyname('ean').AsString:=Req.Params.Items['id'];
-          open;
-
-          if isempty = false then
-          begin
-            try
-              oini:=TStringList.Create;
-              oini.Add('[GENERAL]');
-              oini.Add('Nome='+removeacento(fieldbyname('nome').asstring));
-              oini.Add('Ncm='+removeacento(fieldbyname('ncm').asstring));
-              oini.Add('Cest_Codigo='+removeacento(fieldbyname('cest_codigo').asstring));
-              oini.Add('Embalagem='+removeacento(fieldbyname('embalagem').asstring));
-              oini.Add('QuantidadeEmbalagem='+removeacento(fieldbyname('quantidade_embalagem').asstring));
-              oini.Add('Marca='+removeacento(fieldbyname('marca').asstring));
-              oini.Add('Categoria='+removeacento(fieldbyname('categoria').asstring));
-              oini.Add('Peso='+'');
-//              oini.Add('id_categoria='+removeacento(fieldbyname('id_categoria').asstring));
-              oini.Add('id_categoria='+'');
-//              oini.Add('tributacao'+removeacento(fieldbyname('tributacao').asstring));
-              oini.Add('tributacao='+'');
-              Res.Send(oini.TEXT).Status(200);
-
-              freeandnil(oini);
-
-              inc(cont200);
-              mainview.memohistorico.lines.add(Req.RawWebRequest.RemoteAddr+' | '+inttostr(cont200)+'|'+datetostr(date)+'|'+timetostr(now)+'| Entregue INI: '+Req.Params.Items['id']+ '|' +fieldbyname('nome').asstring);
-            finally
-            end;
-          end
-          else
-          begin
-            try
-              wjson:=tjsonobject.Create;
-              wjson.AddPair(tjsonpair.Create('Status','404'));
-              wjson.AddPair(tjsonpair.Create('Status_Desc','Descricao nao encontrada para o ean: '+Req.Params.Items['id']));
-              Res.Send<TJSONobject>(wjson).Status(404);;
-
-              inc(cont404);
-              mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-            finally
-            end;
-          end;
-        end;
-      end
-      else
-      begin
-        try
-          wjson:=tjsonobject.Create;
-          wjson.AddPair(tjsonpair.Create('Status','404'));
-          wjson.AddPair(tjsonpair.Create('Status_Desc','Necessario enviar o codigo da mercadoria. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789'));
-          Res.Send<TJSONobject>(wjson).Status(404);;
-
-          inc(cont404);
-          mainview.memohistorico.lines.add(inttostr(cont404)+'|'+datetostr(date)+'|'+timetostr(now)+'| Descricao nao encontrada para o ean: '+Req.Params.Items['id']);
-
-        finally
-        end;
-      end;
-    end);
-    //************
-
-
-
-
-  end;
+   FHorse.Get('/api/v2/gtin/:id'    , V2Gtin);
+   FHorse.Get('/api/v2/um/'         , V2UnidadeMedida);
+   FHorse.Get('/api/v2/um/:id'      , V2UnidadeMedida);
 end;
 
-constructor TWsHorse.Create;
+Constructor TWsHorse.Create;
 begin
-  FHorse := THorse.Create;
-  with FHorse do
-  begin
-    Use(Jhonson);
-    Use(OctetStream);
-    Use(HandleException);
-  end;
-  AddMethods;
+   FLog   := nil;
+   FPath  := '';
+
+   FHorse := THorse.Create;
+   FHorse.Use(Jhonson);
+   FHorse.Use(OctetStream);
+   FHorse.Use(HandleException);
+
+   AddMethods;
+end;
+
+procedure TWsHorse.Descricao(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID, S : String;
+    D : TDM;
+begin
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
+
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o GTIN. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789',
+               '| Descricao | Descricao nao encontrada para o ean: '+ LID);
+      Exit;
+   End;
+
+   D := TDM.Create(nil);
+   Try
+     S := D.GetGTIN_Nome(TVersion.v01,LID);
+     If S.IsEmpty Then
+     Begin
+        DoStatus(Req,Res,404,'404',
+                 'Descricao nao encontrada para o ean: '+ LID,
+                 '| Descricao | Descricao nao encontrada para o ean: '+ LID);
+        Exit;
+     End;
+
+     Res.Send(S)
+        .Status(200);
+
+     DoStatus(Req,Res,0,'200','','| Descricao | Entregue descricao: '+ LID +' | ' + S);
+   Finally
+     FreeAndNil(D);
+   End;
+end;
+
+procedure TWsHorse.DescricaoIni(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID : String;
+    O : TGTIN_01;
+    D : TDM;
+    S : TStringList;
+begin
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
+
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o GTIN. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789',
+               '| DescricaoJSon | Descricao nao encontrada para o ean: '+ LID);
+      Exit;
+   End;
+
+   D := TDM.Create(nil);
+   Try
+     O := TGTIN_01( D.GetGTIN(TVersion.v01,LID) );
+     Try
+       If O.GTIN.IsEmpty Then
+       Begin
+          DoStatus(Req,Res,404,'404',
+                   'Descricao nao encontrada para o ean: '+ LID,
+                   '| DescricaoJSon | Descricao nao encontrada para o ean: '+ LID);
+          Exit;
+       End;
+
+       S := TStringList.Create;
+       Try
+         S.Add('[GENERAL]');
+         S.Add('Nome='                + O.Nome);
+         S.Add('Ncm='                 + O.NCM);
+         S.Add('Cest_Codigo='         + O.CEST);
+         S.Add('Embalagem='           + O.Embalagem);
+         S.Add('QuantidadeEmbalagem=' + O.QuantidadeEmbalagem);
+         S.Add('Marca='               + O.Marca);
+         S.Add('Categoria='           + O.Categoria);
+         S.Add('Peso='                + O.Peso);
+         S.Add('id_categoria='        + O.Id_Categoria);
+         S.Add('tributacao='          + O.Tributacao);
+
+         Res.Send(S.Text).Status(200);
+       Finally
+         FreeAndNil(S);
+       End;
+
+       DoStatus(Req,Res,0,'200','','| DescricaoJSon | Entregue descricao: '+ LID +' | ' + O.Nome);
+     Finally
+       FreeAndNil(O);
+     End;
+
+   Finally
+     FreeAndNil(D);
+   End;
+end;
+
+procedure TWsHorse.DescricaoJSon(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID : String;
+    O : TGTIN_01;
+    J : TJSONValue;
+    D : TDM;
+begin
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
+
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o GTIN. Ex: www.eanpictures.com.br:9000/api/descricao/789789789789',
+               '| DescricaoJSon | Descricao nao encontrada para o ean: '+ LID);
+      Exit;
+   End;
+
+   D := TDM.Create(nil);
+   Try
+     O := TGTIN_01( D.GetGTIN(TVersion.v01,LID) );
+     Try
+       If O.GTIN.IsEmpty Then
+       Begin
+          DoStatus(Req,Res,404,'404',
+                   'Descricao nao encontrada para o ean: '+ LID,
+                   '| DescricaoJSon | Descricao nao encontrada para o ean: '+ LID);
+          Exit;
+       End;
+
+       J := TUtils.ToJSonValue<TGTIN_01>(O);
+       Try
+         Res.Send<TJSONValue>(J).Status(200);
+       Finally
+         //FreeAndNil(J); //Horse-> Da o Free no Content
+       End;
+
+       DoStatus(Req,Res,0,'200','','| DescricaoJSon | Entregue descricao: '+ LID +' | ' + O.Nome);
+     Finally
+       FreeAndNil(O);
+     End;
+
+   Finally
+     FreeAndNil(D);
+   End;
+end;
+
+procedure TWsHorse.DescricaoJSon200(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+begin
+   DescricaoJSon(Req, Res, Next);
+end;
+
+destructor TWsHorse.Destroy;
+begin
+   //FreeAndNil(FHorse);
+   inherited;
+end;
+
+function TWsHorse.DoCount(Value: Boolean): Integer;
+begin
+   If Value Then
+      Result := AtomicIncrement(Cont200)
+   Else
+      Result := AtomicIncrement(Cont404);
+end;
+
+procedure TWsHorse.DoLog(Value: String);
+begin
+   If Assigned(FLog) Then
+      FLog(Value);
+end;
+
+procedure TWsHorse.FotoExiste(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LFile, LID : String;
+begin
+   LID   := TUtils.NumberOnly(Req.Params.Items['id']);
+   LFile := TDM.FilePhoto(LID);
+
+   If LFile.IsEmpty Then
+   begin
+      Res.Send('Nao')
+         .Status(200);
+
+      DoStatus(Req,Res,0,'200','','| FotoExiste | Arquivo consultado (Nao): '+ LID);
+
+      Exit;
+   End;
+
+   Res.Send('Sim')
+      .Status(200);
+
+   DoStatus(Req,Res,0,'200','','| FotoExiste | Arquivo consultado (Sim): '+ LID);
+end;
+
+procedure TWsHorse.FotoExisteJson(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LFile, LID : String;
+begin
+   LID   := TUtils.NumberOnly(Req.Params.Items['id']);
+   LFile := TDM.FilePhoto(LID);
+
+   If LFile.IsEmpty Then
+      DoStatus(Req,Res,200,'404','Foto encontrada (Nao): '+ LID,'| FotoExisteJson | Consulta arquivo (Nao): ')
+   Else
+      DoStatus(Req,Res,200,'200','Foto encontrada (Sim): '+ LID,'| FotoExisteJson | Consulta arquivo (Sim): '+ LFile);
+end;
+
+procedure TWsHorse.Gtin(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LFile, LLink, LID : String;
+    LFileSend : TFileReturn;
+    LStream : TFileStream;
+begin
+   LID   := TUtils.NumberOnly(Req.Params.Items['id']);
+   LFile := TDM.FilePhoto(LID);
+
+   If LFile.IsEmpty Then
+   Begin
+      LFile := FPath + PATH_COSMOS + LID + '.png';
+
+      LLink := 'https://cdn-cosmos.bluesoft.com.br/products/' + ExtractFileName(LFile);
+      TUtils.DownloadFile(LLink, LFile);
+      DoLog('Download : '+ LFile +' | '+ LLink);
+   End;
+
+   If not FileExists(LFile) Then
+   Begin
+      DoStatus(Req,Res,404,'404','','| Gtin | Arquivo nao encontrado: '+ LFile);
+      Exit;
+   End;
+
+   LStream := TFileStream.Create(LFile, fmOpenRead);
+   Try
+     LFileSend := TFileReturn.Create( TPath.GetFileName(LFile), LStream, False);
+     Try
+       Res.Send<TFileReturn>(LFileSend)
+          .Status(200);
+     Finally
+       //FreeAndNil(LFileSend); //Horse-> Da o Free no Content
+     End;
+
+     DoStatus(Req,Res,0,'200','','| Gtin | Upload : '+ LFile);
+   Finally
+     //FreeAndNil(LStream); //Horse-> Da o Free no Content
+   End;
+end;
+
+function TWsHorse.Log(Value: TProc<String>): TWsHorse;
+begin
+   Result := Self;
+   FLog   := Value;
 end;
 
 function TWsHorse.Port(Value: Integer): TWsHorse;
 begin
-  Result := Self;
-  FHorse.Port := Value;
+   Result      := Self;
+   FHorse.Port := Value;
 end;
 
 function TWsHorse.Path(Value: String): TWsHorse;
 begin
-  Result := Self;
-  FPath := Value;
+   Result := Self;
+   FPath  := Value;
+
+   If (not DirectoryExists(FPath + PATH_COSMOS)) Then
+      ForceDirectories(FPath + PATH_COSMOS);
 end;
 
 procedure TWsHorse.Power;
 begin
-  if FHorse.IsRunning
-  then FHorse.StopListen
-  else FHorse.Listen;
+   If FHorse.IsRunning Then
+      FHorse.StopListen
+   Else
+      FHorse.Listen;
 end;
 
-
-function twshorse.removeacento(const ptext: string):string;
-type
-  usaascii20127 = type ansistring(20127);
+procedure TWsHorse.UnidadeMedidaJSon(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID : String;
+    O : TUnid_01;
+    J : TJSONValue;
+    D : TDM;
 begin
-    result:=string(usaascii20127(ptext));
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
+
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3',
+               '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+      Exit;
+   End;
+
+   D := TDM.Create(nil);
+   Try
+     O := TUnid_01(D.GetGTIN_Unid_Med(TVersion.v01,LID));
+     If not Assigned(O) Then
+     Begin
+        DoStatus(Req,Res,404,'404',
+                 'Descricao nao encontrada para a unidade de medida: '+ LID,
+                 '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+        Exit;
+     End;
+
+     Try
+       J := TUtils.ToJSonValue<TUnid_01>(O);
+       Try
+         Res.Send<TJSONValue>(J).Status(200);
+       Finally
+         //FreeAndNil(J); //Horse-> Da o Free no Content
+       End;
+
+       DoStatus(Req,Res,0,'200','','| UnidadeMedidaNome | Entregue descricao unidade medida: '+ LID + ' | ' + O.Nome);
+     Finally
+       FreeAndNil(O);
+     End;
+   Finally
+     FreeAndNil(D);
+   End;
 end;
 
-function twshorse.somentenumero(snum: string): string;
-var s1, s2: string;
-  i: integer;
+procedure TWsHorse.UnidadeMedidaNome(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID, S : String;
+    D : TDM;
 begin
-  s1 := snum;
-  s2 := '';
-  for i := 1 to length(s1) do
-    if s1[i] in ['0' .. '9'] then
-    s2:=s2 + s1[i];
-  result:=s2;
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
+
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3',
+               '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+      Exit;
+   End;
+
+   D := TDM.Create(nil);
+   Try
+     S := D.GetGTIN_Unid_Med_Nome(TVersion.v01,LID);
+     If S.IsEmpty Then
+     Begin
+        DoStatus(Req,Res,404,'404',
+                 'Descricao nao encontrada para a unidade de medida: '+ LID,
+                 '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+        Exit;
+     End;
+
+     Res.Send(S)
+        .Status(200);
+
+     DoStatus(Req,Res,0,'200','','| UnidadeMedidaNome | Entregue descricao unidade medida: '+ LID + ' | ' + S);
+   Finally
+     FreeAndNil(D);
+   End;
 end;
 
-procedure TWsHorse.baixacosmos(const ean: string);
-var
-  Pasta: String;
-  i: Integer;
-  //
-  Client_: TNetHTTPClient;
-  lfile: string;
+procedure TWsHorse.V2Gtin(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID : String;
+    O : TGTIN_02;
+    J : TJSONValue;
+    D : TDM;
 begin
-  //nao rodou no windows server
-  LFile := FPath + 'Cosmos'+'\'+somentenumero(ean) + '.png';
-  if directoryexists(FPath + 'Cosmos') = false then
-  CreateDir(FPath + 'Cosmos');
+   LID := TUtils.NumberOnly(Req.Params.Items['id']);
 
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o GTIN. Ex: www.eanpictures.com.br:9000/api/v2/gtin/789789789789',
+               '| V2Gtin | GTIN : '+ LID);
+      Exit;
+   End;
 
-  begin
-    if EAN.Length > 0 then
-      if not FileExists(lfile) then
-      begin
-        Client_ := TNetHTTPClient.Create(nil);
-        Client_.Name := 'Client_';
-        Client_.AcceptEncoding := 'raw';
-        Client_.UserAgent := 'Embarcadero URI Client/1.0';
-        Client_.SecureProtocols := [THTTPSecureProtocol.TLS12];
-        //
-        TMemoryStream(IHTTPResponse(Client_.Get('https://cdn-cosmos.bluesoft.com.br/products/' + EAN)).ContentStream).SaveToFile(lfile);
-        //
-        Client_.Free;
+   D := TDM.Create(nil).Path(FPath);
+   Try
+     O := TGTIN_02( D.GetGTIN(TVersion.v02,LID) );
+     Try
+       If O.Code.IsEmpty Then
+       Begin
+          DoStatus(Req,Res,404,'404',
+                   'GTIN nao encontrada para o ean: '+ LID,
+                   '| V2Gtin | GTIN : '+ LID);
+          Exit;
+       End;
 
-        mainview.MemoHistorico.lines.ADD('******Baixado arquivo direto da cosmos: '+lfile+' | '+'https://cdn-cosmos.bluesoft.com.br/products/' + EAN);
+       J := TUtils.ToJSonValue<TGTIN_02>(O);
+       Try
+         Res.Send<TJSONValue>(J).Status(200);
+       Finally
+         //FreeAndNil(J); //Horse-> Da o Free no Content
+       End;
 
-      end;
+       DoStatus(Req,Res,0,'200','','| V2Gtin | GTIN: '+ LID +' | ' + O.Description);
+     Finally
+       FreeAndNil(O);
+     End;
 
-  end;
+   Finally
+     FreeAndNil(D);
+   End;
 end;
 
+procedure TWsHorse.V2UnidadeMedida(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+var LID : String;
+    I, O : TObject;
+    J : TJSONArray;
+    D : TDM;
+begin
+   LID := '';
+   If (Req.Params.Count <> 0) Then
+      LID := UpperCase(TUtils.AlphaOnly(Req.Params.Items['id']));
+
+   {
+   If LID.IsEmpty Then
+   Begin
+      DoStatus(Req,Res,404,'404',
+               'Necessario enviar o codigo da unidade de medida. Ex: www.eanpictures.com.br:9000/api/um/M3',
+               '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+      Exit;
+   End;
+   }
+
+   D := TDM.Create(nil);
+   Try
+     O := D.GetGTIN_Unid_Med(TVersion.v02,LID);
+     {
+     If not Assigned(O) Then
+     Begin
+        DoStatus(Req,Res,404,'404',
+                 'Descricao nao encontrada para a unidade de medida: '+ LID,
+                 '| UnidadeMedidaNome | Descricao nao encontrada a unidade de medida: '+ LID);
+        Exit;
+     End;
+     }
+
+     Try
+       J := TJSONArray.Create;
+       If Assigned(O) Then
+          For I in TList<TUnid>(O) Do
+             J.Add(TJSONObject(TUtils.ToJSonValue<TUnid>(I)));
+
+       Try
+         Res.Send<TJSONArray>(J).Status(200);
+       Finally
+         //FreeAndNil(J); //Horse-> Da o Free no Content
+       End;
+
+       DoStatus(Req,Res,0,'200','','| UnidadeMedidaNome | Unidade de Medida: '+ LID);
+     Finally
+       If Assigned(O) Then
+          FreeAndNil(O);
+     End;
+   Finally
+     FreeAndNil(D);
+   End;
+end;
+
+procedure TWsHorse.DoStatus(Req: THorseRequest; Res: THorseResponse; Status : Integer; MensStatus, Mens, MensLog : String);
+var J : TJSONObject;
+    C : Integer;
+Begin
+   C := DoCount(MensStatus = '200');
+   DoLog(Req.RawWebRequest.RemoteAddr +' | '+ FormatFloat('000',C) +' '+ MensLog);
+
+   If (Status <= 0) Then
+      Exit;
+
+   J := TJSONObject.Create;
+   Try
+     J.AddPair('Status'     ,MensStatus)
+      .AddPair('Status_Desc',Mens);
+
+     Res.Send<TJSONobject>(J).Status(Status);
+   Finally
+     //FreeAndNil(J); //Horse-> Da o Free no Content
+   End;
+end;
 
 end.

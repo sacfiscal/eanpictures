@@ -14,21 +14,34 @@ type
     btnPower: TBitBtn;
     btnSaveConfig: TBitBtn;
     Panel2: TPanel;
-    Bevel1: TBevel;
-    ValueListEditor1: TValueListEditor;
-    GroupBox3: TGroupBox;
-    MemoHistorico: TMemo;
-    Label1: TLabel;
-    Label2: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
+    vlEditor: TValueListEditor;
+    gbLog: TGroupBox;
+    mmLog: TMemo;
+    btnTest: TBitBtn;
+    btnClear: TBitBtn;
+    pnl200: TPanel;
+    pnl404: TPanel;
+    Panel6: TPanel;
+    lbl_200: TLabel;
+    lbl200: TLabel;
+    lbl_404: TLabel;
+    lbl404: TLabel;
+    lbl_db: TLabel;
+    BitBtn1: TBitBtn;
+    StringGrid1: TStringGrid;
     procedure FormCreate(Sender: TObject);
     procedure btnPowerClick(Sender: TObject);
     procedure btnSaveConfigClick(Sender: TObject);
-    procedure MemoHistoricoChange(Sender: TObject);
+    procedure mmLogChange(Sender: TObject);
+    procedure btnTestClick(Sender: TObject);
+    procedure btnClearClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
-    Control: TMainControl;
+    FControl : TMainControl;
+
+    procedure OnLog(Value : String);
+
     procedure LoadConfigFile;
     procedure SaveConfigFile;
   public
@@ -37,50 +50,124 @@ type
 
 var
   MainView: TMainView;
-  cont404, cont200: integer;
-//  descerro, descok: integer;
-//  umerro, umok: integer;
+  Cont404, Cont200 : Int64;
 
 implementation
-uses main.basedados;
+
+uses gtin.consts,
+     gtin.utils,
+     gtin.dm;
+
 {$R *.dfm}
 
 procedure TMainView.FormCreate(Sender: TObject);
 begin
-  Control := TMainControl.Create;
-  LoadConfigFile;
+   FControl := TMainControl.Create;
+   FControl.Log(OnLog);
+
+   LoadConfigFile;
+end;
+
+procedure TMainView.FormDestroy(Sender: TObject);
+begin
+   FreeAndNil(FControl);
 end;
 
 procedure TMainView.btnSaveConfigClick(Sender: TObject);
 begin
-  SaveConfigFile;
+   SaveConfigFile;
+end;
+
+procedure TMainView.btnTestClick(Sender: TObject);
+var D : TDM;
+    O : TObject;
+begin
+   D := TDM.Create(Self);
+
+   mmLog.Lines.Clear;
+
+   O := D.GetGTIN(TVersion.v01,'7894900011517');
+   Try
+     mmLog.Lines.Add('-> GTIN - Versão 01');
+     mmLog.Lines.Add('------------');
+     mmLog.Lines.Add('');
+     mmLog.Lines.Add( TUtils.ToJSonString<TObject>(O,True) );
+     mmLog.Lines.Add('');
+   Finally
+     FreeAndNil(O);
+   End;
+
+   O := D.GetGTIN(TVersion.v02,'7894900011517');
+   Try
+     mmLog.Lines.Add('-> GTIN - Versão 02');
+     mmLog.Lines.Add('------------');
+     mmLog.Lines.Add('');
+     mmLog.Lines.Add( TUtils.ToJSonString<TObject>(O,True) );
+     mmLog.Lines.Add('');
+   Finally
+     FreeAndNil(O);
+   End;
+
+   O := D.GetGTIN_Unid_Med(TVersion.v02,'');
+   Try
+     mmLog.Lines.Add('-> Unidade Medida - Versão 02');
+     mmLog.Lines.Add('------------');
+     mmLog.Lines.Add('');
+     mmLog.Lines.Add( TUtils.ToJSonString<TObject>(O,True) );
+     mmLog.Lines.Add('');
+   Finally
+     FreeAndNil(O);
+   End;
+
+   FreeAndNil(O);
+end;
+
+procedure TMainView.btnClearClick(Sender: TObject);
+begin
+   AtomicIncrement(Cont200,- Cont200);
+   AtomicIncrement(Cont404,- Cont404);
+   mmLog.Clear;
 end;
 
 procedure TMainView.btnPowerClick(Sender: TObject);
 begin
-  Control.Config.Assign( ValueListEditor1.Strings );
-  Control.Power;
-  case Control.Active of
-    false: btnPower.Caption := 'Start';
-    true : btnPower.Caption := 'Stop';
-  end;
+   FControl.Config.Assign( vlEditor.Strings );
+   FControl.Power;
+
+   btnPower.Caption := 'Stop';
+   If not FControl.Active Then
+      btnPower.Caption := 'Start';
 end;
 
 procedure TMainView.LoadConfigFile;
 begin
-  ValueListEditor1.Strings.Assign( Control.Config );
+   vlEditor.Strings.Assign( FControl.Config );
 end;
 
-procedure TMainView.MemoHistoricoChange(Sender: TObject);
+procedure TMainView.mmLogChange(Sender: TObject);
 begin
-  edit1.Text:=inttostr(cont200);
-  edit2.Text:=inttostr(cont404);
+   lbl200.Caption := FormatFloat('000',Cont200);
+   lbl404.Caption := FormatFloat('000',Cont404);
+end;
+
+procedure TMainView.OnLog(Value: String);
+begin
+   mmLog.Lines.BeginUpdate;
+   Try
+     If (mmLog.Lines.Count > 10000) Then
+        mmLog.Lines.Clear;
+
+     mmLog.Lines.Add(FormatDateTime('dd/mm/yyyy hh:nn:ss',Now) +' | '+ Value);
+
+   Finally
+     mmLog.Lines.EndUpdate;
+   End;
 end;
 
 procedure TMainView.SaveConfigFile;
 begin
-  Control.SaveConfig(ValueListEditor1.Strings);
-  LoadConfigFile;
+   FControl.SaveConfig( vlEditor.Strings );
+   LoadConfigFile;
 end;
 
 end.

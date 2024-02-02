@@ -5,7 +5,7 @@
 		"github.com/hashload/horse": {
 			"name": "horse",
 			"version": "3.1.5",
-			"hash": "58ff510ba7e701f5f8029182762f5341",
+			"hash": "ad1917104ff5b0226c857502ef5cd963",
 			"artifacts": {},
 			"failed": false,
 			"changed": false
@@ -40,7 +40,7 @@
 			"hash": "6408c0964998a945994d4bf29d2c88c5",
 			"artifacts": {},
 			"failed": false,
-			"changed": false
+			"changed": true
 		}
 	}
 }

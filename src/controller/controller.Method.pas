@@ -23,10 +23,10 @@ implementation
 
 procedure Registry(App: Thorse);
 begin
-  App.Get('/api/gtin/:id', Getgtin);
-  App.Get('/api/fotoexiste/:id', Getfotoexiste);
-  App.Get('/api/descricao/:id', Getdescricao);
-  App.Get('/api/um/:id', GetUnidadeMedida);
+  App.Get('/api/gtin/:id', Getgtin)
+     .Get('/api/fotoexiste/:id', Getfotoexiste)
+     .Get('/api/descricao/:id', Getdescricao)
+     .Get('/api/um/:id', GetUnidadeMedida);
 end;
 
 procedure Getgtin(Req: THorseRequest; Res: THorseResponse; Next: TProc);

@@ -10,9 +10,7 @@ object MainView: TMainView
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
@@ -22,6 +20,7 @@ object MainView: TMainView
     Align = alTop
     Caption = 'Server'
     TabOrder = 0
+    ExplicitWidth = 1004
   end
   object Panel3: TPanel
     Left = 0
@@ -30,6 +29,8 @@ object MainView: TMainView
     Height = 41
     Align = alBottom
     TabOrder = 1
+    ExplicitTop = 529
+    ExplicitWidth = 1004
     DesignSize = (
       1008
       41)
@@ -42,6 +43,7 @@ object MainView: TMainView
       Caption = 'Start'
       TabOrder = 0
       OnClick = btnPowerClick
+      ExplicitLeft = 858
     end
     object btnSaveConfig: TBitBtn
       Left = 661
@@ -52,6 +54,7 @@ object MainView: TMainView
       Caption = 'Save Config'
       TabOrder = 1
       OnClick = btnSaveConfigClick
+      ExplicitLeft = 658
     end
   end
   object Panel2: TPanel
@@ -114,6 +117,8 @@ object MainView: TMainView
           'MemoOK')
         TabOrder = 0
         OnChange = MemoHistoricoChange
+        ExplicitLeft = 1
+        ExplicitTop = 14
       end
     end
     object Edit1: TEdit

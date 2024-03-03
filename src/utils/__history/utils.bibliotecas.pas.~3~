@@ -1,0 +1,28 @@
+unit utils.bibliotecas;
+
+interface
+
+type
+  TBibliotecas = class(TInterfacedObject, ibibliotecas)
+
+  end;
+
+
+function SomenteNumero(snum: string) : string;
+
+implementation
+
+function SomenteNumero(snum: string): string;
+var s1, s2: string;
+  i: integer;
+begin
+  s1 := snum;
+  s2 := '';
+  for i := 1 to length(s1) do
+    if s1[i] in ['0' .. '9'] then
+    s2:=s2 + s1[i];
+  result:=s2;
+end;
+
+
+end.

@@ -3,10 +3,13 @@
         <ProjectGuid>{7C7B119B-AE55-4280-BAB0-D5FDC4EFB70A}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="WsGTin.Aplication.dproj">
+        <Projects Include="WsGtin.Aplication.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="WsGTin.Service.dproj">
+        <Projects Include="WsGtin.Service.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="WsGTin.Console.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -17,32 +20,41 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="WsGTin_Aplication">
-        <MSBuild Projects="WsGTin.Aplication.dproj"/>
+    <Target Name="WsGtin_Aplication">
+        <MSBuild Projects="WsGtin.Aplication.dproj"/>
     </Target>
-    <Target Name="WsGTin_Aplication:Clean">
-        <MSBuild Projects="WsGTin.Aplication.dproj" Targets="Clean"/>
+    <Target Name="WsGtin_Aplication:Clean">
+        <MSBuild Projects="WsGtin.Aplication.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="WsGTin_Aplication:Make">
-        <MSBuild Projects="WsGTin.Aplication.dproj" Targets="Make"/>
+    <Target Name="WsGtin_Aplication:Make">
+        <MSBuild Projects="WsGtin.Aplication.dproj" Targets="Make"/>
     </Target>
-    <Target Name="WsGTin_Service">
-        <MSBuild Projects="WsGTin.Service.dproj"/>
+    <Target Name="WsGtin_Service">
+        <MSBuild Projects="WsGtin.Service.dproj"/>
     </Target>
-    <Target Name="WsGTin_Service:Clean">
-        <MSBuild Projects="WsGTin.Service.dproj" Targets="Clean"/>
+    <Target Name="WsGtin_Service:Clean">
+        <MSBuild Projects="WsGtin.Service.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="WsGTin_Service:Make">
-        <MSBuild Projects="WsGTin.Service.dproj" Targets="Make"/>
+    <Target Name="WsGtin_Service:Make">
+        <MSBuild Projects="WsGtin.Service.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WsGTin_Console">
+        <MSBuild Projects="WsGTin.Console.dproj"/>
+    </Target>
+    <Target Name="WsGTin_Console:Clean">
+        <MSBuild Projects="WsGTin.Console.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WsGTin_Console:Make">
+        <MSBuild Projects="WsGTin.Console.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="WsGTin_Aplication;WsGTin_Service"/>
+        <CallTarget Targets="WsGtin_Aplication;WsGtin_Service;WsGTin_Console"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="WsGTin_Aplication:Clean;WsGTin_Service:Clean"/>
+        <CallTarget Targets="WsGtin_Aplication:Clean;WsGtin_Service:Clean;WsGTin_Console:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="WsGTin_Aplication:Make;WsGTin_Service:Make"/>
+        <CallTarget Targets="WsGtin_Aplication:Make;WsGtin_Service:Make;WsGTin_Console:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
